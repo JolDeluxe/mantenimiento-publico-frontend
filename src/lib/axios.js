@@ -1,7 +1,6 @@
 /**
  * Cliente HTTP Centralizado con Interceptores Inteligentes
- * 
- * Características:
+ * * Características:
  * - Auto-inyección de JWT en headers
  * - Refresh automático de tokens expirados
  * - Queue de peticiones durante refresh
@@ -10,13 +9,9 @@
  * - Retry logic configurable
  * - Timeout inteligente
  */
-import { useAuthStore } from '@/stores/auth-store';
-
 import axios from 'axios';
+import { useAuthStore } from '@/stores/auth-store';
 import { ENV } from '@/config/env';
-
-// Importaremos el store después de crearlo
-// import { useAuthStore } from '@/stores/auth-store';
 
 // ============================================================
 // CONFIGURACIÓN BASE
@@ -83,7 +78,7 @@ const refreshAccessToken = async () => {
     // Guardar el nuevo token
     localStorage.setItem('token', accessToken);
 
-    // Actualizar el store (lo haremos después)
+    // Actualizar el store global
     useAuthStore.getState().setToken(accessToken);
 
     return accessToken;
@@ -109,8 +104,8 @@ const refreshAccessToken = async () => {
 
 api.interceptors.request.use(
   (config) => {
-    // Obtener token del localStorage
-    const token = storage.getToken();
+    // Obtener token directamente de Zustand
+    const token = useAuthStore.getState().token;
     
     // Si existe token y la URL no es de autenticación pública, inyectarlo
     if (token && !config.url?.includes('/auth/login') && !config.url?.includes('/auth/register')) {
@@ -139,7 +134,7 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => {
-    // Respuesta exitosa, retornar directamente
+    // Respuesta exitosa, retornar la data directamente
     if (ENV.IS_DEV) {
       console.log(`✅ [${response.status}] ${response.config.url}`);
     }
@@ -153,10 +148,18 @@ api.interceptors.response.use(
     // --------------------------------------------------------
     if (error.response?.status === 401 && !originalRequest._retry) {
       
-      // Evitar loop infinito
+      // 🚀 SOLUCIÓN: Si el 401 viene del login o registro, rechazar inmediatamente
+      // para que el formulario muestre "Credenciales incorrectas" en lugar de 
+      // intentar buscar un Refresh Token que aún no existe.
+      if (originalRequest.url?.includes('/auth/login') || originalRequest.url?.includes('/auth/register')) {
+        return Promise.reject(error);
+      }
+
+      // Evitar loop infinito si falla la propia ruta de refresh
       if (originalRequest.url?.includes('/auth/refresh')) {
         console.error('🔴 Refresh token inválido, cerrando sesión...');
         localStorage.clear();
+        useAuthStore.getState().logout();
         window.location.href = '/login?session=expired';
         return Promise.reject(error);
       }
@@ -213,9 +216,6 @@ api.interceptors.response.use(
     // --------------------------------------------------------
     if (error.response?.status === 500) {
       console.error('🔥 Error Interno del Servidor');
-      
-      // Opcional: Mostrar notificación global
-      // notifyError('Error del servidor. Intenta de nuevo más tarde.');
     }
 
     // --------------------------------------------------------
@@ -223,9 +223,6 @@ api.interceptors.response.use(
     // --------------------------------------------------------
     if (!error.response) {
       console.error('📡 Error de Red - Backend no disponible');
-      
-      // Opcional: Mostrar modo offline
-      // notifyError('No hay conexión con el servidor');
     }
 
     // Log completo del error en desarrollo
@@ -251,7 +248,8 @@ api.interceptors.response.use(
  * Wrapper para manejar respuestas de forma consistente
  */
 export const handleResponse = (response) => {
-  return response.data;
+  // Como el interceptor ya devuelve response.data, aquí solo devolvemos response
+  return response;
 };
 
 /**

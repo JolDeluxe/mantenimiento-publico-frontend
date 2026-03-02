@@ -3,96 +3,87 @@
    Motor visual del ecosistema Cuadra Mantenimiento
 ───────────────────────────────────────────────────────────────────── */
 
-/* ─── Imports obligatorios al inicio (regla CSS estricta) ─────────── */
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lato:wght@300;400;700;900&family=Work+Sans:wght@300;400;500;600&display=swap');
-@import "material-symbols/rounded.css";
+/* ─── Imports con soporte para Ejes Variables (Variable Fonts) ─── */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Lato:wght@300;400;700;900&family=Work+Sans:wght@300;400;500;600&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-25..200&display=swap');
 @import "tailwindcss";
 
 /* ─────────────────────────────────────────────────────────────────────
    TOKENS DEL SISTEMA
-   Fuente de verdad de colores, tipografías y radios para toda la app.
-   Los colores de estado y prioridad son espejo directo del schema Prisma.
 ───────────────────────────────────────────────────────────────────── */
 @theme {
+  --color-marca-primario:   #482b2c;
+  --color-marca-secundario: #846768;
+  --color-marca-acento:     #66494a;
+  --color-cuadra-arena:     #f6f5f0;
 
-  /* --- COLORES DE MARCA CUADRA ------------------------------------ */
-  --color-marca-primario:   #482b2c;  /* Café Oscuro Cuadra          */
-  --color-marca-secundario: #846768;  /* Café Piel Cuadra            */
-  --color-marca-acento:     #66494a;  /* Café Medio                  */
-  --color-cuadra-arena:     #f6f5f0;  /* Fondo crema de la tienda    */
+  --color-estado-pendiente:   #f59e0b;
+  --color-estado-asignada:    #3b82f6;
+  --color-estado-en-progreso: #8b5cf6;
+  --color-estado-en-pausa:    #6b7280;
+  --color-estado-resuelto:    #10b981;
+  --color-estado-cerrado:     #1e293b;
+  --color-estado-rechazado:   #ef4444;
+  --color-estado-cancelada:   #9ca3af;
 
-  /* --- ESTADOS DE TAREA (espejo de EstadoTarea en schema.prisma) -- */
-  --color-estado-pendiente:   #f59e0b; /* amber-400   */
-  --color-estado-asignada:    #3b82f6; /* blue-500    */
-  --color-estado-en-progreso: #8b5cf6; /* violet-500  */
-  --color-estado-en-pausa:    #6b7280; /* gray-500    */
-  --color-estado-resuelto:    #10b981; /* emerald-500 */
-  --color-estado-cerrado:     #1e293b; /* slate-800   */
-  --color-estado-rechazado:   #ef4444; /* red-500     */
-  --color-estado-cancelada:   #9ca3af; /* gray-400    */
+  --color-prioridad-baja:    #10b981;
+  --color-prioridad-media:   #f59e0b;
+  --color-prioridad-alta:    #f97316;
+  --color-prioridad-critica: #ef4444;
 
-  /* --- PRIORIDADES (espejo de Prioridad en schema.prisma) --------- */
-  --color-prioridad-baja:    #10b981; /* emerald-500 */
-  --color-prioridad-media:   #f59e0b; /* amber-400   */
-  --color-prioridad-alta:    #f97316; /* orange-500  */
-  --color-prioridad-critica: #ef4444; /* red-500     */
-
-  /* --- TIPOGRAFÍAS ------------------------------------------------ */
   --font-lectura: "Lato", "Work Sans", ui-sans-serif, system-ui;
   --font-titulos: "Bebas Neue", sans-serif;
   --font-codigo:  "JetBrains Mono", monospace;
 
-  /* --- ESTÉTICA GENERAL ------------------------------------------ */
-  --radius-cuadra: 0.25rem; /* Bordes finos, estilo industrial/lujo  */
+  --radius-cuadra: 0.25rem;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   OVERRIDE REACT-TOASTIFY (Iguala Desktop con Mobile)
+───────────────────────────────────────────────────────────────────── */
+:root {
+  --toastify-color-success: var(--color-estado-resuelto);
+  --toastify-color-error: var(--color-estado-rechazado);
+  --toastify-color-warning: var(--color-estado-pendiente);
+  --toastify-color-info: var(--color-estado-asignada);
+  --toastify-font-family: var(--font-lectura);
+  --toastify-text-color-light: #ffffff;
 }
 
 /* ─────────────────────────────────────────────────────────────────────
    BASE
-   Estilos de elementos HTML nativos. Sin clases.
 ───────────────────────────────────────────────────────────────────── */
 @layer base {
-
   body {
     font-family: var(--font-lectura);
     @apply antialiased text-slate-800 bg-cuadra-arena;
   }
 
-  /* Títulos con Bebas Neue */
   .fuente-titulos {
     font-family: var(--font-titulos);
     letter-spacing: 0.05em;
   }
 
-  /* ─── Scrollbar personalizado (Chrome / Edge) ─────────────────── */
-  ::-webkit-scrollbar       { width: 8px; height: 8px; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-track { @apply bg-slate-100; }
   ::-webkit-scrollbar-thumb {
     @apply bg-slate-300 rounded-full hover:bg-marca-secundario/50 transition-colors;
   }
 
-  /* ─── Campos de formulario ────────────────────────────────────── */
   input, textarea, select {
     @apply w-full border border-slate-300 px-3 py-2 rounded-sm
            focus:outline-none focus:ring-2 focus:ring-marca-secundario/30
            focus:border-marca-secundario transition-all bg-white;
   }
 
-  /* Evita zoom forzado en iPhone al hacer focus en inputs */
   @media screen and (max-width: 768px) {
-    input, textarea, select {
-      font-size: 16px !important;
-    }
+    input, textarea, select { font-size: 16px !important; }
   }
 }
 
 /* ─────────────────────────────────────────────────────────────────────
    COMPONENTS
-   Clases reutilizables de alto nivel. Usan @apply de Tailwind.
 ───────────────────────────────────────────────────────────────────── */
 @layer components {
-
-  /* ─── Botones semánticos ──────────────────────────────────────── */
-
   .boton-guardar, .boton-aceptar {
     @apply bg-emerald-600 text-white px-5 py-2 rounded-sm
            hover:bg-emerald-700 active:scale-95 transition-all
@@ -123,33 +114,35 @@
            font-medium cursor-pointer flex items-center justify-center gap-2;
   }
 
-  /* Estado deshabilitado global para todos los botones */
   button:disabled {
     @apply opacity-50 cursor-not-allowed grayscale transform-none!;
   }
 
-  /* ─── Componentes Cuadra ──────────────────────────────────────── */
-
-  /* Tarjeta estándar del sistema */
   .tarjeta-cuadra {
     @apply bg-white border border-slate-200 shadow-sm rounded-sm overflow-hidden;
   }
 
-  /* Skeleton de carga */
   .animacion-carga {
     @apply animate-pulse bg-slate-200 rounded-sm;
   }
 
-  /* ─── Material Symbols: configuración de variación de fuente ──── */
-  /* Permite controlar fill, weight y tamaño desde icon.jsx via style */
   .material-symbols-rounded {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    user-select: none;
+    font-family: 'Material Symbols Rounded';
+    font-weight: normal;
+    font-style: normal;
     font-size: 24px;
     line-height: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    user-select: none;
     flex-shrink: 0;
+    -webkit-font-feature-settings: 'liga';
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
 }

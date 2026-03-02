@@ -1,4 +1,4 @@
-import api, { handleResponse, handleError } from '@/lib/axios';
+import api, { handleError } from '@/lib/axios';
 import { useAuthStore } from '@/stores/auth-store';
 
 export const authService = {
@@ -7,17 +7,18 @@ export const authService = {
    */
   login: async (identifier, password) => {
     try {
-      const response = await api.post('/api/auth/login', {
+      // 🚀 CORRECCIÓN: api.post ya devuelve la 'data' limpia gracias al interceptor
+      const data = await api.post('/api/auth/login', {
         identifier,
         password,
       });
 
-      const { token, refreshToken, usuario } = response.data;
+      const { token, refreshToken, usuario } = data;
 
-      // Guardar en el store
+      // Guardar en el store global (Zustand)
       useAuthStore.getState().setAuth(usuario, token, refreshToken);
 
-      return handleResponse(response);
+      return data;
     } catch (error) {
       handleError(error);
     }
@@ -32,13 +33,9 @@ export const authService = {
       
       await api.post('/api/auth/logout', { refreshToken });
 
-      // Limpiar store
       useAuthStore.getState().logout();
-
-      // Redirigir
       window.location.href = '/login';
     } catch (error) {
-      // Aunque falle, limpiar localmente
       useAuthStore.getState().logout();
       window.location.href = '/login';
     }
@@ -49,8 +46,8 @@ export const authService = {
    */
   getProfile: async () => {
     try {
-      const response = await api.get('/api/auth/me');
-      return handleResponse(response);
+      const data = await api.get('/api/auth/me');
+      return data;
     } catch (error) {
       handleError(error);
     }
