@@ -110,7 +110,7 @@ const refreshAccessToken = async () => {
 api.interceptors.request.use(
   (config) => {
     // Obtener token del localStorage
-    const token = localStorage.getItem('token');
+    const token = storage.getToken();
     
     // Si existe token y la URL no es de autenticación pública, inyectarlo
     if (token && !config.url?.includes('/auth/login') && !config.url?.includes('/auth/register')) {
@@ -143,7 +143,7 @@ api.interceptors.response.use(
     if (ENV.IS_DEV) {
       console.log(`✅ [${response.status}] ${response.config.url}`);
     }
-    return response;
+    return response.data;
   },
   async (error) => {
     const originalRequest = error.config;
