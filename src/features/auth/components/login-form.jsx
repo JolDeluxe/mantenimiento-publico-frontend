@@ -73,14 +73,14 @@ export const LoginForm = ({
           Olvidé mi contraseña
         </button>
         
-        {/* <button
+        <button
           type="button"
           onClick={onRegister}
           className="text-sm font-medium text-slate-500 hover:text-marca-primario hover:underline focus:outline-none cursor-pointer flex items-center gap-1"
         >
           <Icon name="person_add" size="16px" />
           ¿No tienes una cuenta? Regístrate aquí
-        </button> */}
+        </button>
       </div>
     </div>
   );

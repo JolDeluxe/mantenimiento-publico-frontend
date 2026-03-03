@@ -8,6 +8,9 @@ const HomeDashboard = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-cuadra-arena/10">
+      <div className="flex justify-center mb-8">
+          <img src="/img/01_Cuadra.webp" alt="Logo Cuadra" className="w-50 h-auto object-contain" />
+        </div>
       <h1 className="fuente-titulos text-4xl text-marca-primario mb-4">
         Dashboard Principal
       </h1>
