@@ -6,14 +6,14 @@ import { TicketTimeline } from './ticket-timeline';
 import { useAuthStore } from '@/stores/auth-store';
 
 // ── DataRow ────────────────────────────────────────────────────────────────
-const DataRow = ({ icon, label, value, fallback = 'No registrado' }) => (
+const DataRow = ({ icon, label, value, fallback = 'No registrado', colorClass = '' }) => (
     <div className="flex gap-3 items-start">
         <div className="mt-0.5 text-slate-400 shrink-0">
             <Icon name={icon} size="sm" />
         </div>
         <div className="flex flex-col min-w-0">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{label}</span>
-            <span className="text-sm font-medium text-slate-800 mt-0.5 wrap-break-word">
+            <span className={cn("text-sm font-medium mt-0.5 wrap-break-word", colorClass || "text-slate-800")}>
                 {value || <span className="text-slate-400 italic font-normal">{fallback}</span>}
             </span>
         </div>
@@ -330,6 +330,76 @@ const ContextualBanner = ({ ticket, onImageExpand }) => {
     );
 };
 
+const ReportContextSection = ({ ticket }) => {
+    const creador = ticket.creador;
+    const mostrarContacto = ticket.tipo === 'TICKET' && creador?.rol === 'CLIENTE_INTERNO';
+    const esTerminal = ['RESUELTO', 'CERRADO'].includes(ticket.estado);
+    const paroLabel = esTerminal ? 'Paro resuelto' : 'Paro activo';
+    const paroBadgeClass = esTerminal
+        ? 'bg-emerald-600 text-white'
+        : 'bg-red-600 text-white';
+
+    return (
+        <div className={`rounded-xl p-3.5 space-y-2 border ${
+            ticket.paroProduccion
+                ? 'bg-red-50/80 border-red-200 shadow-sm'
+                : 'bg-slate-50 border-slate-200/60'
+        }`}>
+            <h4 className="text-xs font-black text-slate-900 border-b border-slate-200/85 pb-1.5 flex items-center gap-1.5">
+                <Icon name="report_problem" size="xs" className={ticket.paroProduccion ? 'text-red-600' : 'text-slate-500'} />
+                Reporte y Producción
+                {ticket.paroProduccion && (
+                    <span className={`ml-auto inline-flex items-center gap-1 rounded px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${paroBadgeClass}`}>
+                        <Icon name={esTerminal ? 'task_alt' : 'priority_high'} size="xs" />
+                        {paroLabel}
+                    </span>
+                )}
+            </h4>
+            <div className="space-y-2.5">
+                <div className="grid grid-cols-2 gap-3">
+                    <DataRow
+                        icon="production_quantity_limits"
+                        label="Paro producción"
+                        value={ticket.paroProduccion ? 'Sí' : 'No'}
+                        colorClass={ticket.paroProduccion ? 'text-red-700 font-extrabold' : 'text-emerald-700 font-extrabold'}
+                    />
+                    <DataRow
+                        icon="timer"
+                        label="Impacto"
+                        value={ticket.impactoProduccion ? `${ticket.impactoProduccion} min` : null}
+                        fallback="Sin impacto registrado"
+                    />
+                </div>
+                {mostrarContacto && (
+                    <div className="pt-2 border-t border-slate-200/60 space-y-2.5">
+                        <DataRow
+                            icon="contact_phone"
+                            label="Contacto reportante"
+                            value={
+                                <span className="flex flex-col gap-0.5">
+                                    <span>{creador.nombre}</span>
+                                    {creador.cargo && <span className="text-[10px] text-slate-500 font-medium">{creador.cargo}</span>}
+                                </span>
+                            }
+                        />
+                        <div className="grid grid-cols-2 gap-3">
+                            <DataRow icon="call" label="Teléfono" value={creador.telefono} fallback="Sin teléfono" />
+                            <DataRow icon="mail" label="Correo" value={creador.email} fallback="Sin correo" />
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+const shouldShowReportContext = (ticket) => {
+    if (!ticket) return false;
+    const creador = ticket.creador;
+    const mostrarContacto = ticket.tipo === 'TICKET' && creador?.rol === 'CLIENTE_INTERNO';
+    return Boolean(ticket.paroProduccion || ticket.impactoProduccion || mostrarContacto);
+};
+
 // ── Modal principal ─────────────────────────────────────────────────────────
 export const TicketDetailModal = ({ isOpen, onClose, ticket }) => {
     const { user } = useAuthStore();
@@ -447,6 +517,10 @@ export const TicketDetailModal = ({ isOpen, onClose, ticket }) => {
                             </div>
 
                             <ContextualBanner ticket={ticket} onImageExpand={handleImageExpand} />
+
+                            {shouldShowReportContext(ticket) && (
+                                <ReportContextSection ticket={ticket} />
+                            )}
 
                             <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
                                 <h3 className="text-lg font-extrabold text-slate-900 leading-tight mb-3">

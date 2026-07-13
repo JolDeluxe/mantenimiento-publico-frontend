@@ -139,9 +139,22 @@ export const MobileTicketReviewModal = ({
     const actorResolucion = resolucion?.usuario || resolucion?.actor || null;
     const fechaResolucion = resolucion?.createdAt || null;
 
-    // Lógica DTO: El frontend es ciego, obedece al boolean de la Base de Datos
-    const isManual = Boolean(resolucion?.esTiempoManual);
-    const tiempoAMostrar = formatMins(ticket?.duracionReal || 0);
+    // Lógica de parsing para el tiempo manual vs sistema
+    const matchManual = notaTecnico.match(/\[TIEMPO_MANUAL:(.+?)\]/);
+    const isManual = !!matchManual || Boolean(resolucion?.esTiempoManual);
+    const tiempoManualStr = matchManual ? matchManual[1] : null;
+    
+    // Parse duration logic:
+    const realMins = ticket?.duracionReal || 0;
+    const tiempoSistemaStr = formatMins(realMins);
+    const tiempoAMostrar = (isManual && tiempoManualStr) ? tiempoManualStr : tiempoSistemaStr;
+
+    // Limpiador robusto y retroactivo para ocultar flags del sistema en la UI
+    const notaLimpia = notaTecnico
+        .replace(/\[TIEMPO_MANUAL:(.+?)\]/g, '')
+        .replace(/\[ENTREGA_ATRASADA_MANUAL\]/g, '')
+        .replace(/\[RUTINA\]/g, '')
+        .trim();
 
     const imagenesEvidenciaBrutas = resolucion?.imagenes?.length > 0
         ? resolucion.imagenes
@@ -201,7 +214,7 @@ export const MobileTicketReviewModal = ({
                             )}
                         </div>
 
-                        {(notaTecnico || imagenesEvidenciaUrls?.length > 0 || actorResolucion) && (
+                        {(notaLimpia || imagenesEvidenciaUrls?.length > 0 || actorResolucion) && (
                             <div className="bg-blue-50/40 border border-blue-100 rounded-xl p-4 shadow-sm">
                                 <p className="text-xs text-blue-700 font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5">
                                     <Icon name="info" size="xs" /> Evidencia del Técnico
@@ -227,11 +240,11 @@ export const MobileTicketReviewModal = ({
                                     </div>
                                 </div>
 
-                                {notaTecnico && (
+                                {notaLimpia && (
                                     <div className="relative mb-4">
                                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-300 rounded-l-md"></div>
                                         <p className="text-sm text-slate-700 italic bg-white p-3 pl-4 rounded-md border border-slate-100 shadow-sm leading-relaxed">
-                                            "{notaTecnico}"
+                                            "{notaLimpia}"
                                         </p>
                                     </div>
                                 )}

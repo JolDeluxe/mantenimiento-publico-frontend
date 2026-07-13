@@ -17,14 +17,41 @@ const isVencida = (ticket) => {
 const getEstadoActionMeta = (estado) => {
     switch (estado) {
         case 'ASIGNADA':
-            return { text: 'Iniciar', icon: 'play_arrow' };
+            return {
+                text: 'Iniciar',
+                icon: 'play_arrow',
+                primaryClass: 'px-3 py-1.5 text-white bg-estado-asignada shadow-sm',
+                ghostClass: 'px-2.5 py-1.5 text-estado-asignada bg-estado-asignada/10 hover:bg-estado-asignada/20'
+            };
         case 'EN_PROGRESO':
         case 'EN_PROCESO':
-            return { text: 'Finalizar', icon: 'check_circle' };
+            return {
+                text: 'Finalizar',
+                icon: 'check_circle',
+                primaryClass: 'px-3 py-1.5 text-white bg-estado-resuelto shadow-sm',
+                ghostClass: 'px-2.5 py-1.5 text-estado-resuelto bg-estado-resuelto/10 hover:bg-estado-resuelto/20'
+            };
         case 'EN_PAUSA':
-            return { text: 'Reanudar', icon: 'play_arrow' };
+            return {
+                text: 'Reanudar',
+                icon: 'play_arrow',
+                primaryClass: 'px-3 py-1.5 text-white bg-estado-asignada shadow-sm',
+                ghostClass: 'px-2.5 py-1.5 text-estado-asignada bg-estado-asignada/10 hover:bg-estado-asignada/20'
+            };
+        case 'RECHAZADO':
+            return {
+                text: 'Reiniciar',
+                icon: 'replay',
+                primaryClass: 'px-3 py-1.5 text-white bg-estado-rechazado shadow-sm',
+                ghostClass: 'px-2.5 py-1.5 text-estado-rechazado bg-estado-rechazado/10 hover:bg-estado-rechazado/20'
+            };
         default:
-            return { text: 'Estado', icon: 'swap_horiz' };
+            return {
+                text: 'Estado',
+                icon: 'swap_horiz',
+                primaryClass: 'px-3 py-1.5 text-white bg-estado-asignada shadow-sm',
+                ghostClass: 'px-2.5 py-1.5 text-estado-asignada bg-estado-asignada/10 hover:bg-estado-asignada/20'
+            };
     }
 };
 
@@ -75,6 +102,7 @@ export const TicketCard = ({
 
     const actionMeta = getEstadoActionMeta(ticket.estado);
     const [responsablesExpanded, setResponsablesExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
 
     const responsablesExtra = (ticket.responsables?.length || 0) - 3;
     const responsablesMostrar = responsablesExpanded
@@ -83,16 +111,21 @@ export const TicketCard = ({
 
     return (
         <div className={cn(
-            'bg-white border rounded-2xl p-4 shadow-sm',
+            'bg-white border rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow duration-200',
             vencida ? 'border-estado-rechazado/30 bg-red-50/30' : 'border-slate-200'
         )}>
             <div
-                className="flex items-start justify-between gap-2 mb-2 active:opacity-70 transition-opacity cursor-pointer"
-                onClick={() => onViewDetail?.(ticket)}
+                className="flex items-start justify-between gap-2 mb-2 active:opacity-75 transition-opacity cursor-pointer select-none"
+                onClick={() => setIsExpanded(!isExpanded)}
             >
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <span className="text-xs font-mono font-bold text-slate-400">#{ticket.id}</span>
+                        {ticket.tipo && (
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md">
+                                {ticket.tipo}
+                            </span>
+                        )}
                     </div>
                     <div className="flex items-center gap-2">
                         <h3 className="text-sm font-bold text-slate-900 leading-snug line-clamp-2">
@@ -105,81 +138,105 @@ export const TicketCard = ({
                         )}
                     </div>
                 </div>
-                <div className="flex flex-col items-end gap-1 shrink-0">
-                    <TicketStatusBadge estado={ticket.estado} />
+                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    <div className="flex items-center gap-1">
+                        <TicketStatusBadge estado={ticket.estado} />
+                        <Icon 
+                            name="keyboard_arrow_down" 
+                            size="sm" 
+                            className={cn(
+                                "text-slate-400 transition-transform duration-300",
+                                isExpanded && "rotate-180"
+                            )} 
+                        />
+                    </div>
                     <TicketPriorityBadge prioridad={ticket.prioridad} />
                 </div>
             </div>
 
-            <div className="space-y-1.5 mb-3 ml-1 mt-2">
-                {ticket.createdAt && (
-                    <p className="flex items-center gap-2">
-                        <Icon name="calendar_today" size="xs" className="text-slate-300 shrink-0" />
-                        <span className="text-xs text-slate-500">
-                            Creado: {formatFecha(ticket.createdAt)}
-                        </span>
-                    </p>
-                )}
-                {ticket.planta && (
-                    <p className="flex items-center gap-2">
-                        <Icon name="factory" size="xs" className="text-slate-300 shrink-0" />
-                        <span className="text-xs text-slate-500">
-                            {ticket.planta}{ticket.area ? ` — ${ticket.area}` : ''}
-                        </span>
-                    </p>
-                )}
-                {ticket.creador && (
-                    <p className="flex items-center gap-2">
-                        <Icon name="person" size="xs" className="text-slate-300 shrink-0" />
-                        <span className="text-xs text-slate-500 truncate">{ticket.creador.nombre}</span>
-                    </p>
-                )}
-                {ticket.responsables?.length > 0 && (
-                    <div className="flex items-start gap-2">
-                        <Icon name="engineering" size="xs" className="text-slate-300 shrink-0 mt-0.5" />
-                        <div className="flex flex-col gap-2 min-w-0">
-                            {responsablesMostrar.map((r) => (
-                                <div key={r.id} className="flex items-center gap-2" title={r.nombre}>
-                                    {r.imagen ? (
-                                        <img
-                                            src={r.imagen}
-                                            alt={r.nombre}
-                                            className="w-6 h-6 rounded-full object-cover border border-slate-200 shrink-0 bg-slate-50"
-                                            onError={(e) => {
-                                                e.target.onerror = null;
-                                                e.target.src = '/img/perfil-no-foto.webp';
-                                            }}
-                                        />
-                                    ) : (
-                                        <div className="w-6 h-6 rounded-full bg-marca-primario/10 flex items-center justify-center text-marca-primario text-[10px] font-bold border border-marca-primario/20 shrink-0 shadow-sm">
-                                            {r.nombre?.charAt(0).toUpperCase() ?? "?"}
-                                        </div>
-                                    )}
-                                    <span className="text-xs text-slate-500 truncate">
-                                        {r.nombre}
-                                    </span>
-                                </div>
-                            ))}
-                            {responsablesExtra > 0 && (
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); setResponsablesExpanded(!responsablesExpanded); }}
-                                    className="text-[10px] font-bold text-marca-primario hover:underline self-start mt-0.5"
-                                >
-                                    {responsablesExpanded ? 'Ver menos' : `+ ${responsablesExtra} ver más`}
-                                </button>
-                            )}
+            {isExpanded && (
+                <div className="space-y-1.5 mb-3 ml-1 mt-3 border-t border-slate-100/50 pt-2.5 animate-fadeIn">
+                    {ticket.createdAt && (
+                        <p className="flex items-center gap-2">
+                            <Icon name="calendar_today" size="xs" className="text-slate-300 shrink-0" />
+                            <span className="text-xs text-slate-500">
+                                Creado: {formatFecha(ticket.createdAt)}
+                            </span>
+                        </p>
+                    )}
+                    {ticket.planta && (
+                        <p className="flex items-center gap-2">
+                            <Icon name="factory" size="xs" className="text-slate-300 shrink-0" />
+                            <span className="text-xs text-slate-500">
+                                {ticket.planta}{ticket.area ? ` — ${ticket.area}` : ''}
+                            </span>
+                        </p>
+                    )}
+                    {(() => {
+                        const catInfo = CATEGORIAS_EQUIPO.find(c => c.value === ticket.categoria);
+                        if (!ticket.categoria) return null;
+                        return (
+                            <p className="flex items-center gap-2">
+                                <Icon name={catInfo?.icon || 'label'} size="xs" className="text-slate-300 shrink-0" />
+                                <span className="text-xs text-slate-500">
+                                    {catInfo?.label || ticket.categoria}
+                                </span>
+                            </p>
+                        );
+                    })()}
+                    {ticket.creador && (
+                        <p className="flex items-center gap-2">
+                            <Icon name="person" size="xs" className="text-slate-300 shrink-0" />
+                            <span className="text-xs text-slate-500 truncate">{ticket.creador.nombre}</span>
+                        </p>
+                    )}
+                    {ticket.responsables?.length > 0 && (
+                        <div className="flex items-start gap-2">
+                            <Icon name="engineering" size="xs" className="text-slate-300 shrink-0 mt-0.5" />
+                            <div className="flex flex-col gap-2 min-w-0">
+                                {responsablesMostrar.map((r) => (
+                                    <div key={r.id} className="flex items-center gap-2" title={r.nombre}>
+                                        {r.imagen ? (
+                                            <img
+                                                src={r.imagen}
+                                                alt={r.nombre}
+                                                className="w-6 h-6 rounded-full object-cover border border-slate-200 shrink-0 bg-slate-50"
+                                                onError={(e) => {
+                                                    e.target.onerror = null;
+                                                    e.target.src = '/img/perfil-no-foto.webp';
+                                                }}
+                                            />
+                                        ) : (
+                                            <div className="w-6 h-6 rounded-full bg-marca-primario/10 flex items-center justify-center text-marca-primario text-[10px] font-bold border border-marca-primario/20 shrink-0 shadow-sm">
+                                                {r.nombre?.charAt(0).toUpperCase() ?? "?"}
+                                            </div>
+                                        )}
+                                        <span className="text-xs text-slate-500 truncate">
+                                            {r.nombre}
+                                        </span>
+                                    </div>
+                                ))}
+                                {responsablesExtra > 0 && (
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); setResponsablesExpanded(!responsablesExpanded); }}
+                                        className="text-[10px] font-bold text-marca-primario hover:underline self-start mt-0.5"
+                                    >
+                                        {responsablesExpanded ? 'Ver menos' : `+ ${responsablesExtra} ver más`}
+                                    </button>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
-                {ticket.fechaVencimiento && (
-                    <p className="flex items-center gap-2">
-                        <Icon name="event" size="xs" className={cn('shrink-0', vencida ? 'text-estado-rechazado/70' : 'text-slate-300')} />
-                        <span className={cn('text-xs font-medium', vencida ? 'text-estado-rechazado' : 'text-slate-500')}>
-                            Entrega: {formatFechaRelativa(ticket.fechaVencimiento)}
-                        </span>
-                    </p>
-                )}
-            </div>
+                    )}
+                    {ticket.fechaVencimiento && (
+                        <p className="flex items-center gap-2">
+                            <Icon name="event" size="xs" className={cn('shrink-0', vencida ? 'text-estado-rechazado/70' : 'text-slate-300')} />
+                            <span className={cn('text-xs font-medium', vencida ? 'text-estado-rechazado' : 'text-slate-500')}>
+                                Entrega: {formatFechaRelativa(ticket.fechaVencimiento)}
+                            </span>
+                        </p>
+                    )}
+                </div>
+            )}
 
             <div className="flex items-center gap-2 pt-3 border-t border-slate-100 flex-wrap w-full">
                 {puedeCancelar && (
@@ -218,8 +275,8 @@ export const TicketCard = ({
                         className={cn(
                             "flex items-center gap-1.5 rounded-lg text-xs font-bold active:scale-95 transition-all",
                             esEstadoPrimario
-                                ? "px-3 py-1.5 text-white bg-estado-en-progreso shadow-sm"
-                                : "px-2.5 py-1.5 text-estado-en-progreso bg-estado-en-progreso/10 hover:bg-estado-en-progreso/20"
+                                ? actionMeta.primaryClass
+                                : actionMeta.ghostClass
                         )}
                         title={actionMeta.text}
                     >

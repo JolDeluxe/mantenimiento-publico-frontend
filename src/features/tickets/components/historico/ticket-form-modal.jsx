@@ -1,20 +1,36 @@
 // src/features/tickets/components/historico/ticket-form-modal.jsx
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Icon } from '@/components/ui/z_index';
+import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Icon, SearchableSelect } from '@/components/ui/z_index';
 import { getMinDateHoy, fechaInputToISOLocal, isoToDateInput } from '@/lib/date';
 import { Label, Input, Select } from '@/components/form/z_index';
 import { cn } from '@/utils/cn';
+import { getMaquinaById, getMaquinas } from '@/features/maquinaria/api/maquinaria-api';
 import {
     PLANTAS, CLASIFICACIONES_CLIENTE, CLASIFICACIONES_ADMIN,
     PRIORIDADES, TIPOS_ADMIN, ROLES_ADMIN, AREAS_POR_PLANTA, AREAS, CATEGORIAS_EQUIPO
 } from '../../constants';
 
-const MAX_TITULO = 80;
+const MAX_TITULO = 255;
 const MAX_DESCRIPCION = 500;
 
 const HORAS_OPTIONS = Array.from({ length: 12 }, (_, i) => i);
 const MINUTOS_OPTIONS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+
+const deducirPlantaDeArea = (areaName, plantaActual) => {
+    if (!areaName) return '';
+    if (plantaActual && AREAS_POR_PLANTA[plantaActual]?.includes(areaName)) {
+        return plantaActual;
+    }
+    for (const [plantaKey, areasList] of Object.entries(AREAS_POR_PLANTA)) {
+        if (areasList.includes(areaName)) {
+            return plantaKey;
+        }
+    }
+    return '';
+};
+
+
 
 const DurationPicker = ({ valueMins, onChange, disabled, error }) => {
     const horas = Math.floor((valueMins || 0) / 60);
@@ -273,13 +289,19 @@ const TecnicoCartSelector = ({ tecnicos, value, onChange, disabled, placeholder 
                             )}
                         </div>
                         {!disabled && (
-                            <button
-                                type="button"
+                            <span
+                                role="button"
+                                tabIndex={0}
                                 onClick={handleClear}
-                                className="shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-slate-200 hover:bg-red-100 hover:text-red-500 text-slate-500 transition-colors"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        handleClear(e);
+                                    }
+                                }}
+                                className="shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-slate-200 hover:bg-red-100 hover:text-red-500 text-slate-500 transition-colors cursor-pointer"
                             >
                                 <Icon name="close" size="xs" />
-                            </button>
+                            </span>
                         )}
                     </>
                 ) : (
@@ -455,7 +477,7 @@ const PRIORIDAD_DOT = {
     CRITICA: 'bg-prioridad-critica',
 };
 
-const CarritoItem = ({ item, index, onRemove, tecnicoMap, tecnicos, onAddTecnico, onRemoveTecnico }) => {
+const CarritoItem = ({ item, index, onRemove, tecnicoMap, tecnicos, onAddTecnico, onRemoveTecnico, onCambiarTecnico }) => {
     const [expanded, setExpanded] = useState(false);
     const clasificLabel = CLASIFICACIONES_ADMIN.find(c => c.value === item.clasificacion)?.label || item.clasificacion;
     const tipoLabel = TIPOS_ADMIN.find(t => t.value === item.tipo)?.label || item.tipo;
@@ -498,18 +520,35 @@ const CarritoItem = ({ item, index, onRemove, tecnicoMap, tecnicos, onAddTecnico
                     </div>
 
                     {!expanded && tecnicosIds.length > 0 && (
-                        <div className="flex items-center gap-1 mt-1 flex-wrap">
-                            <Icon name="engineering" size="xs" className="text-slate-300 shrink-0" />
-                            {tecnicosIds.slice(0, 3).map(id => {
-                                const t = tecnicoMap?.[id];
-                                return (
-                                    <span key={id} className="text-[10px] text-slate-500 bg-slate-100 px-1 py-0.5 rounded font-medium truncate max-w-[80px]">
-                                        {t?.nombre ?? `#${id}`}
-                                    </span>
-                                );
-                            })}
-                            {tecnicosIds.length > 3 && (
-                                <span className="text-[10px] text-slate-400">+{tecnicosIds.length - 3}</span>
+                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center gap-1 text-[10px] font-bold text-slate-500">
+                                <Icon name="engineering" size="xs" className="text-slate-400 shrink-0" />
+                                <span>Técnico:</span>
+                            </div>
+                            <div className="relative inline-flex items-center">
+                                <select
+                                    value={tecnicosIds[0] || ''}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        if (val) onCambiarTecnico(item._id, val);
+                                    }}
+                                    className="text-[11px] font-bold text-marca-primario bg-marca-primario/5 border border-marca-primario/15 rounded px-2 py-0.5 pr-6 focus:outline-none focus:ring-1 focus:ring-marca-secundario cursor-pointer appearance-none max-w-[150px] truncate"
+                                >
+                                    <option value="" disabled>Selecciona...</option>
+                                    {tecnicos.map(t => (
+                                        <option key={t.id} value={String(t.id)}>
+                                            {t.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+                                <div className="pointer-events-none absolute right-1.5 flex items-center text-marca-primario/70">
+                                    <Icon name="expand_more" size="xs" />
+                                </div>
+                            </div>
+                            {tecnicosIds.length > 1 && (
+                                <span className="text-[9px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full shrink-0">
+                                    +{tecnicosIds.length - 1} más
+                                </span>
                             )}
                         </div>
                     )}
@@ -589,6 +628,8 @@ const CarritoItem = ({ item, index, onRemove, tecnicoMap, tecnicos, onAddTecnico
 export const TicketFormModal = ({
     isOpen, onClose, onSuccess,
     ticketAEditar, currentUser, tecnicos = [], isSubmitting,
+    scope = 'general',
+    defaultDate, defaultClasificacion,
 }) => {
     const esEdicion = Boolean(ticketAEditar);
     const esAdmin = ROLES_ADMIN.has(currentUser?.rol);
@@ -605,6 +646,7 @@ export const TicketFormModal = ({
 
     const [titulo, setTitulo] = useState('');
     const [descripcion, setDescripcion] = useState('');
+    const [mostrarDescripcion, setMostrarDescripcion] = useState(false);
     const [categoria, setCategoria] = useState('');
     const [planta, setPlanta] = useState('');
     const [area, setArea] = useState('');
@@ -616,13 +658,25 @@ export const TicketFormModal = ({
 
     const [responsables, setResponsables] = useState([]);
 
+    const [maquinaId, setMaquinaId] = useState('');
+    const [maquinaInfo, setMaquinaInfo] = useState(null);
+    const [paroProduccion, setParoProduccion] = useState(false);
+    const [impactoProduccionMins, setImpactoProduccionMins] = useState(0);
+    const [validatingMaquina, setValidatingMaquina] = useState(false);
+    const [opcionesMaquinas, setOpcionesMaquinas] = useState([]);
+    const [maquinasRaw, setMaquinasRaw] = useState([]);
+
     const [backendError, setBackendError] = useState('');
     const [submitted, setSubmitted] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    const esRutina = clasificacion === 'RUTINA';
-    const carritoLocked = carrito.length > 0;
+    const esRutina = ticketAEditar ? (ticketAEditar.clasificacion === 'RUTINA' || ticketAEditar.categoria === 'RUTINA') : (categoria === 'RUTINA');
     const tecnicoCart = tecnicos.find(t => String(t.id) === tecnicoCartId);
+
+    const areasOptions = useMemo(() => {
+        const list = (planta && AREAS_POR_PLANTA[planta]) ? AREAS_POR_PLANTA[planta] : AREAS;
+        return list.map(a => ({ value: a, label: a }));
+    }, [planta]);
 
     const opcionesTecnicos = useMemo(() =>
         tecnicos.map(t => ({ value: String(t.id), tecnico: t })), [tecnicos]);
@@ -641,6 +695,7 @@ export const TicketFormModal = ({
 
     const hoyLocal = getMinDateHoy();
     const mananaLocal = isoToDateInput(Date.now() + 86400000);
+    const puedeReportarParoProduccion = categoria === 'MAQUINARIA' && scope !== 'actividades' && Boolean(maquinaId) && clasificacion === 'CORRECTIVO';
 
     useEffect(() => {
         if (!isOpen) return;
@@ -648,11 +703,11 @@ export const TicketFormModal = ({
         setBackendError('');
         setIsDropdownOpen(false);
         setCarrito([]);
-        setTecnicoCartId('');
 
         if (esEdicion) {
             setTitulo(ticketAEditar.titulo ?? '');
             setDescripcion(ticketAEditar.descripcion ?? '');
+            setMostrarDescripcion(Boolean(ticketAEditar.descripcion && ticketAEditar.descripcion !== 'Sin descripción.'));
             setCategoria(ticketAEditar.categoria ?? '');
             setPlanta(ticketAEditar.planta ?? '');
             setArea(ticketAEditar.area ?? '');
@@ -660,25 +715,115 @@ export const TicketFormModal = ({
             setClasificacion(ticketAEditar.clasificacion ?? '');
             setTipo(ticketAEditar.tipo ?? 'PLANEADA');
             setFechaVencimiento(isoToDateInput(ticketAEditar.fechaVencimiento));
-            setTiempoEstimadoMins(ticketAEditar.tiempoEstimado ?? 0);
+            setTiempoEstimadoMins(ticketAEditar.tiempoEstimado ?? ticketAEditar.tiempoEstimadoMins ?? 0);
             setResponsables(ticketAEditar.responsables?.map(r => String(r.id)) ?? []);
+            const targetMaquinaId = ticketAEditar.maquinaId ?? ticketAEditar.maquina?.id;
+            setMaquinaId(targetMaquinaId ? String(targetMaquinaId) : '');
+            setMaquinaInfo(ticketAEditar.maquina ?? null);
+            setParoProduccion(Boolean(ticketAEditar.paroProduccion));
+            setImpactoProduccionMins(ticketAEditar.impactoProduccion ?? 0);
         } else {
             setTitulo(''); setDescripcion(''); setCategoria('');
-            setPlanta(''); setArea(''); setPrioridad('');
-            setClasificacion(''); setTipo(''); setFechaVencimiento('');
+            setMostrarDescripcion(false);
+            setPlanta(''); setArea('');
+            setPrioridad('MEDIA');
+            setClasificacion(defaultClasificacion || (scope === 'mantenimientos' ? 'PREVENTIVO' : ''));
+            setTipo('PLANEADA');
+            setFechaVencimiento(defaultDate || hoyLocal);
             setTiempoEstimadoMins(0); setResponsables([]);
+            setTecnicoCartId('');
+            setMaquinaId('');
+            setMaquinaInfo(null);
+            setParoProduccion(false);
+            setImpactoProduccionMins(0);
         }
-    }, [isOpen, esEdicion, ticketAEditar]);
+    }, [isOpen, esEdicion, ticketAEditar, scope, defaultDate, defaultClasificacion]);
+
+    useEffect(() => {
+        if (!puedeReportarParoProduccion) {
+            setParoProduccion(false);
+            setImpactoProduccionMins(0);
+        }
+    }, [puedeReportarParoProduccion]);
+
+    // Cargar catálogo de máquinas al abrir el modal (Thin Client: se consulta la API)
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const cargarCatalogoMaquinas = async () => {
+            try {
+                const res = await getMaquinas({ limit: 500 });
+                const list = res?.data?.data || res?.data || [];
+                setMaquinasRaw(list);
+                const opts = list.map(m => ({
+                    value: String(m.id),
+                    label: `${m.codigo} - ${m.nombre}`
+                }));
+                setOpcionesMaquinas(opts);
+            } catch (err) {
+                console.error("Error al cargar máquinas en modal:", err);
+            }
+        };
+
+        cargarCatalogoMaquinas();
+    }, [isOpen]);
+
+    // Efecto que observa el cambio en maquinaId y realiza validación/autocompletado (Thin Client)
+    useEffect(() => {
+        if (!maquinaId) {
+            setMaquinaInfo(null);
+            return;
+        }
+
+        const fetchMaquinaInfo = async () => {
+            setValidatingMaquina(true);
+            try {
+                const response = await getMaquinaById(Number(maquinaId));
+                if (response?.data?.status === 'success' && response?.data?.data) {
+                    const maq = response.data.data;
+                    setMaquinaInfo(maq);
+                    setPlanta(maq.planta || '');
+                    setArea(maq.area || '');
+                } else if (response?.data && !response.data.status) {
+                    const maq = response.data;
+                    setMaquinaInfo(maq);
+                    setPlanta(maq.planta || '');
+                    setArea(maq.area || '');
+                } else {
+                    setMaquinaInfo(null);
+                }
+            } catch (err) {
+                console.error("Error al validar máquina:", err);
+                setMaquinaInfo(null);
+            } finally {
+                setValidatingMaquina(false);
+            }
+        };
+
+        const timer = setTimeout(fetchMaquinaInfo, 400); // debounce de 400ms
+        return () => clearTimeout(timer);
+    }, [maquinaId]);
 
     const getErrors = () => {
         const e = {};
         if (!titulo.trim() || titulo.length < 3) e.titulo = 'Mínimo 3 caracteres.';
-        if (!descripcion.trim() || descripcion.length < 3) e.descripcion = 'Mínimo 3 caracteres.';
-        if (!clasificacion) e.clasificacion = 'Selecciona la clasificación.';
+        if (descripcion.trim() && descripcion.trim().length < 3) e.descripcion = 'Mínimo 3 caracteres.';
         if (!prioridad) e.prioridad = 'Selecciona la prioridad.';
         if (!planta) e.planta = 'Selecciona la planta.';
         if (!area) e.area = 'Selecciona el área.';
         if (!categoria.trim()) e.categoria = 'La categoría es obligatoria.';
+        if (maquinaId && !maquinaInfo && !validatingMaquina) {
+            e.maquinaId = 'La máquina ingresada no existe.';
+        }
+
+        if (scope === 'mantenimientos') {
+            if (!maquinaId) {
+                e.maquinaId = 'La máquina es obligatoria para mantenimientos.';
+            }
+            if (!clasificacion) {
+                e.clasificacion = 'La clasificación es obligatoria para mantenimientos.';
+            }
+        }
 
         if (esAdmin) {
             if (!tipo) e.tipo = 'El tipo de tarea es obligatorio.';
@@ -692,8 +837,8 @@ export const TicketFormModal = ({
                     e.fechaVencimiento = 'No se permiten fechas anteriores a hoy.';
             }
 
-            // Validación: Tiempo estimado obligatorio (si no es rutina)
-            if (!esRutina && tiempoEstimadoMins <= 0) {
+            // Validación: Tiempo estimado obligatorio para tickets generales, opcional en MAQUINARIA
+            if (categoria !== 'MAQUINARIA' && tiempoEstimadoMins <= 0) {
                 e.tiempoEstimado = 'El tiempo estimado es obligatorio.';
             }
 
@@ -710,10 +855,15 @@ export const TicketFormModal = ({
 
     const resetFormFields = () => {
         setTitulo(''); setDescripcion(''); setCategoria('');
+        setMostrarDescripcion(false);
         setPlanta(''); setArea(''); setPrioridad('');
-        setClasificacion(''); setTipo(''); setFechaVencimiento('');
+        setClasificacion(scope === 'mantenimientos' ? 'PREVENTIVO' : ''); setTipo(''); setFechaVencimiento('');
         setTiempoEstimadoMins(0); setSubmitted(false);
         setIsDropdownOpen(false);
+        setMaquinaId('');
+        setMaquinaInfo(null);
+        setParoProduccion(false);
+        setImpactoProduccionMins(0);
     };
 
     const handleAgregarAlCarrito = () => {
@@ -723,12 +873,26 @@ export const TicketFormModal = ({
 
         setCarrito(prev => [...prev, {
             _id: `${Date.now()}-${Math.random()}`,
-            titulo, descripcion, categoria, planta, area,
+            titulo, descripcion: descripcion.trim() || 'Sin descripción.', categoria, planta, area,
             prioridad, clasificacion, tipo, fechaVencimiento,
-            tiempoEstimadoMins, esRutina,
+            tiempoEstimado: tiempoEstimadoMins, esRutina,
             responsables: tecnicoCartId ? [tecnicoCartId] : [],
+            maquinaId: maquinaId ? Number(maquinaId) : null,
+            paroProduccion,
+            impactoProduccion: paroProduccion && impactoProduccionMins > 0 ? impactoProduccionMins : null,
         }]);
-        resetFormFields();
+        
+        // Solo reseteamos lo que cambia por tarea. El contexto (planta, área, etc) se mantiene.
+        setTitulo('');
+        setDescripcion('');
+        setMostrarDescripcion(false);
+        setTiempoEstimadoMins(0);
+        setSubmitted(false);
+        setIsDropdownOpen(false);
+        setMaquinaId('');
+        setMaquinaInfo(null);
+        setParoProduccion(false);
+        setImpactoProduccionMins(0);
     };
 
     const handleQuitarDelCarrito = (_id) => {
@@ -751,6 +915,14 @@ export const TicketFormModal = ({
         ));
     };
 
+    const handleCambiarTecnicoItem = (itemId, techId) => {
+        setCarrito(prev => prev.map(item =>
+            item._id === itemId
+                ? { ...item, responsables: [techId, ...(item.responsables || []).filter(id => id !== techId)] }
+                : item
+        ));
+    };
+
     const buildFormData = (item) => {
         const fd = new FormData();
         fd.append('titulo', item.titulo);
@@ -760,6 +932,9 @@ export const TicketFormModal = ({
         fd.append('planta', item.planta);
         fd.append('area', item.area);
         fd.append('prioridad', item.prioridad);
+        if (item.maquinaId) fd.append('maquinaId', String(item.maquinaId));
+        fd.append('paroProduccion', item.paroProduccion ? 'true' : 'false');
+        if (item.paroProduccion && item.impactoProduccion) fd.append('impactoProduccion', String(item.impactoProduccion));
         if (esAdmin) {
             fd.append('tipo', item.tipo);
             if (item.fechaVencimiento) fd.append('fechaVencimiento', fechaInputToISOLocal(item.fechaVencimiento));
@@ -788,12 +963,15 @@ export const TicketFormModal = ({
 
             const fd = new FormData();
             fd.append('titulo', titulo);
-            fd.append('descripcion', descripcion);
+            fd.append('descripcion', descripcion.trim() || 'Sin descripción.');
             fd.append('clasificacion', clasificacion);
             if (categoria) fd.append('categoria', categoria);
             fd.append('planta', planta);
             fd.append('area', area);
             fd.append('prioridad', prioridad);
+            if (maquinaId) fd.append('maquinaId', maquinaId);
+            fd.append('paroProduccion', paroProduccion ? 'true' : 'false');
+            if (paroProduccion && impactoProduccionMins > 0) fd.append('impactoProduccion', String(impactoProduccionMins));
             if (esAdmin) {
                 fd.append('tipo', tipo);
                 if (fechaVencimiento) fd.append('fechaVencimiento', fechaInputToISOLocal(fechaVencimiento));
@@ -803,6 +981,7 @@ export const TicketFormModal = ({
             }
             try {
                 await onSuccess(fd);
+                setTecnicoCartId('');
             } catch (err) {
                 const data = err?.response?.data;
                 let msg = data?.error || data?.message || 'Error al procesar la solicitud.';
@@ -816,8 +995,20 @@ export const TicketFormModal = ({
             setBackendError('Agrega al menos una tarea antes de guardar.');
             return;
         }
+
+        const tieneTextoPendiente = (titulo && titulo.trim().length > 0) || (descripcion && descripcion.trim().length > 0);
+        if (tieneTextoPendiente) {
+            setBackendError("Tienes una tarea a medio escribir en el formulario. Agrégala a la lista o limpia los campos antes de guardar.");
+            return;
+        }
+
         try {
-            await onSuccess(carrito.map(buildFormData));
+            const batchPayloads = carrito.map(item => ({
+                ...item,
+                fechaVencimiento: item.fechaVencimiento ? fechaInputToISOLocal(item.fechaVencimiento) : null
+            }));
+            await onSuccess(batchPayloads);
+            setTecnicoCartId('');
         } catch (err) {
             const data = err?.response?.data;
             let msg = data?.error || data?.message || 'Error al procesar la solicitud.';
@@ -847,12 +1038,35 @@ export const TicketFormModal = ({
                 <div className={cn("flex gap-6", modoCarrito ? "flex-col lg:flex-row" : "flex-col")}>
 
                     {/* ── PANEL IZQUIERDO: Formulario ── */}
-                    <div className="flex-1 min-w-0 flex flex-col gap-4">
+                    <div className={cn(
+                        "flex-1 min-w-0 flex flex-col",
+                        modoCarrito && "max-h-[55vh] md:max-h-[62vh] lg:max-h-[68vh]"
+                    )}>
                         {backendError && (
-                            <div className="flex items-center gap-2 px-4 py-3 text-sm font-semibold rounded-md bg-rose-50 border border-rose-200 text-rose-700">
-                                <Icon name="error" size="sm" /> {backendError}
+                            <div className="flex items-center justify-between gap-2 px-4 py-3 text-sm font-semibold rounded-md bg-rose-50 border border-rose-200 text-rose-700 shrink-0 mb-3">
+                                <div className="flex items-center gap-2">
+                                    <Icon name="error" size="sm" />
+                                    <span>{backendError}</span>
+                                </div>
+                                {backendError.includes("medio escribir") && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            resetFormFields();
+                                            setBackendError('');
+                                        }}
+                                        className="text-xs font-bold underline hover:text-rose-900 cursor-pointer ml-auto shrink-0"
+                                    >
+                                        Limpiar campos
+                                    </button>
+                                )}
                             </div>
                         )}
+
+                        <div className={cn(
+                            "flex flex-col gap-4",
+                            modoCarrito ? "flex-1 overflow-y-auto pr-3 custom-scrollbar pb-3" : ""
+                        )}>
 
                         {esAdmin && tecnicos.length > 0 && (
                             modoCarrito ? (
@@ -867,18 +1081,22 @@ export const TicketFormModal = ({
                                                 Técnico principal *
                                             </span>
                                         </div>
-                                        {carritoLocked && (
-                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                                                <Icon name="lock" size="xs" /> Bloqueado para este tecnico
-                                            </span>
-                                        )}
                                     </div>
 
                                     <TecnicoCartSelector
                                         tecnicos={tecnicos}
                                         value={tecnicoCartId}
-                                        onChange={(val) => { if (!carritoLocked) setTecnicoCartId(val); }}
-                                        disabled={isSubmitting || carritoLocked}
+                                        onChange={(val) => {
+                                            setTecnicoCartId(val);
+                                            if (val) {
+                                                setCarrito(prev => prev.map(item => {
+                                                    const currentResps = item.responsables || [];
+                                                    const newResps = [val, ...currentResps.filter(id => id !== val)];
+                                                    return { ...item, responsables: newResps };
+                                                }));
+                                            }
+                                        }}
+                                        disabled={isSubmitting}
                                         placeholder="Buscar y seleccionar técnico..."
                                     />
                                     {fe.responsables && <p className="text-[10px] text-rose-600 font-bold flex items-center gap-1"><Icon name="error" size="xs" /> {fe.responsables}</p>}
@@ -930,6 +1148,7 @@ export const TicketFormModal = ({
                             )
                         )}
 
+
                         {/* ── TÍTULO ── */}
                         <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-center">
@@ -946,7 +1165,14 @@ export const TicketFormModal = ({
                         </div>
 
                         {/* ── FILA 1: Clasificación | Prioridad | Categoría | Tipo ── */}
-                        <div className={cn("grid gap-3", esAdmin ? "grid-cols-1 md:grid-cols-4" : "grid-cols-1 md:grid-cols-3")}>
+                        <div className={cn(
+                            "grid gap-3 grid-cols-1",
+                            (esAdmin ? 3 : 2) + (categoria === 'MAQUINARIA' && scope !== 'actividades' ? 1 : 0) === 4
+                                ? "md:grid-cols-4"
+                                : (esAdmin ? 3 : 2) + (categoria === 'MAQUINARIA' && scope !== 'actividades' ? 1 : 0) === 3
+                                    ? "md:grid-cols-3"
+                                    : "md:grid-cols-2"
+                        )}>
 
                             {esAdmin && (
                                 <div className="flex flex-col gap-1.5">
@@ -955,33 +1181,49 @@ export const TicketFormModal = ({
                                         error={!!fe.tipo} helperText={fe.tipo}
                                         disabled={isSubmitting || lockBaseFields}>
                                         <option value="" disabled hidden>Selecciona…</option>
-                                        {isTicket && <option value="TICKET">Ticket</option>}
+                                        {isTicket && <option value="TICKET">Reporte</option>}
                                         {TIPOS_ADMIN.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                                     </Select>
                                 </div>
                             )}
-
+                            
                             <div className="flex flex-col gap-1.5">
-                                <Label htmlFor="tf-clas" error={!!fe.clasificacion}>Clasificación *</Label>
-                                <Select
-                                    id="tf-clas"
-                                    value={clasificacion}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        setClasificacion(val);
-                                        // Lógica de automatización: Si es Inspección, forzar Categoría a Rutina
-                                        if (val === 'INSPECCION') {
-                                            setCategoria('SERVICIOS_RUTINAS');
-                                        }
-                                    }}
-                                    error={!!fe.clasificacion}
-                                    helperText={fe.clasificacion}
-                                    disabled={isSubmitting}
-                                >
+                                <Label htmlFor="tf-cat" error={!!fe.categoria}>Categoría de la tarea *</Label>
+                                <Select id="tf-cat" value={categoria} onChange={(e) => {
+                                    const val = e.target.value;
+                                    setCategoria(val);
+                                    if (val === 'RUTINA') {
+                                        setClasificacion('RUTINA');
+                                    } else if (val !== 'MAQUINARIA') {
+                                        setClasificacion('PREVENTIVO');
+                                    }
+
+                                    // Si no es MAQUINARIA, limpiar toda la maquinaria y ubicaciones para evitar huerfanos (PWA-Proof)
+                                    if (val !== 'MAQUINARIA') {
+                                        setMaquinaId('');
+                                        setMaquinaInfo(null);
+                                        setPlanta('');
+                                        setArea('');
+                                    }
+                                }}
+                                    error={!!fe.categoria} helperText={fe.categoria} disabled={isSubmitting || lockBaseFields}>
                                     <option value="" disabled hidden>Selecciona…</option>
-                                    {clasificacionesOpts.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                                    {CATEGORIAS_EQUIPO.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                                 </Select>
                             </div>
+
+                            {categoria === 'MAQUINARIA' && scope !== 'actividades' && (
+                                <div className="flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                                    <Label htmlFor="tf-clasificacion" error={!!fe.clasificacion}>{`Clasificación ${scope === 'mantenimientos' ? '*' : ''}`}</Label>
+                                    <Select id="tf-clasificacion" value={clasificacion} onChange={(e) => setClasificacion(e.target.value)}
+                                        error={!!fe.clasificacion} helperText={fe.clasificacion} disabled={isSubmitting}>
+                                        <option value="" disabled hidden>Selecciona…</option>
+                                        <option value="PREVENTIVO">Preventivo</option>
+                                        <option value="CORRECTIVO">Correctivo</option>
+                                    </Select>
+                                </div>
+                            )}
+
                             <div className="flex flex-col gap-1.5">
                                 <Label htmlFor="tf-pri" error={!!fe.prioridad}>Prioridad *</Label>
                                 <Select id="tf-pri" value={prioridad} onChange={(e) => setPrioridad(e.target.value)}
@@ -990,27 +1232,98 @@ export const TicketFormModal = ({
                                     {PRIORIDADES.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                                 </Select>
                             </div>
-                            <div className="flex flex-col gap-1.5">
-                                <Label htmlFor="tf-cat" error={!!fe.categoria}>Categoría del equipo *</Label>
-                                <Select id="tf-cat" value={categoria} onChange={(e) => setCategoria(e.target.value)}
-                                    error={!!fe.categoria} helperText={fe.categoria} disabled={isSubmitting || lockBaseFields}>
-                                    <option value="" disabled hidden>Selecciona…</option>
-                                    {CATEGORIAS_EQUIPO.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-                                </Select>
-                            </div>
-                            {/* {esAdmin && (
-                                <div className="flex flex-col gap-1.5">
-                                    <Label htmlFor="tf-tipo" error={!!fe.tipo}>Tipo de tarea *</Label>
-                                    <Select id="tf-tipo" value={tipo} onChange={(e) => setTipo(e.target.value)}
-                                        error={!!fe.tipo} helperText={fe.tipo}
-                                        disabled={isSubmitting || lockBaseFields}>
-                                        <option value="" disabled hidden>Selecciona…</option>
-                                        {isTicket && <option value="TICKET">Ticket</option>}
-                                        {TIPOS_ADMIN.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                                    </Select>
-                                </div>
-                            )} */}
                         </div>
+
+                        {/* ── MÁQUINA (maquinaId) con SearchableSelect condicional ── */}
+                        {categoria === 'MAQUINARIA' && scope !== 'actividades' && (
+                            <div className="flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                                <div className="flex justify-between items-center">
+                                    <Label htmlFor="tf-maquinaId" error={!!fe.maquinaId}>{`Maquinaria Relacionada ${scope === 'mantenimientos' ? '*' : ''}`}</Label>
+                                    {validatingMaquina && (
+                                        <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1 animate-pulse">
+                                            <Icon name="sync" size="xs" className="animate-spin" /> Validando...
+                                        </span>
+                                    )}
+                                </div>
+                                <SearchableSelect
+                                    options={opcionesMaquinas}
+                                    value={maquinaId}
+                                    onChange={(selectedId) => {
+                                        if (!selectedId) {
+                                            setMaquinaId('');
+                                            setMaquinaInfo(null);
+                                            setPlanta('');
+                                            setArea('');
+                                            return;
+                                        }
+                                        setMaquinaId(selectedId);
+                                        const maq = maquinasRaw.find(m => String(m.id) === String(selectedId));
+                                        if (maq) {
+                                            setMaquinaInfo(maq);
+                                            setPlanta(maq.planta || '');
+                                            setArea(maq.area || '');
+                                        }
+                                    }}
+                                    placeholder="Seleccionar máquina por código o nombre..."
+                                    searchPlaceholder="Buscar por MBCxxxx o nombre..."
+                                    allOptionText={null}
+                                    disabled={isSubmitting || lockBaseFields}
+                                    icon="precision_manufacturing"
+                                />
+                                {fe.maquinaId && <p className="text-[10px] text-rose-600 font-bold mt-0.5">{fe.maquinaId}</p>}
+                                {maquinaInfo && (
+                                    <div className="flex items-center gap-2 px-3 py-2 bg-marca-primario/[0.04] border border-marca-primario/10 rounded-xl text-xs text-marca-primario font-semibold mt-1">
+                                        <Icon name="info" size="xs" />
+                                        <span>Máquina validada: <strong>{maquinaInfo.nombre}</strong> ({maquinaInfo.proceso})</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {puedeReportarParoProduccion && (
+                            <div className={cn(
+                                "rounded-xl border p-3.5 flex flex-col gap-3 transition-colors animate-in fade-in slide-in-from-top-1 duration-200",
+                                paroProduccion ? "bg-red-50 border-red-200" : "bg-slate-50 border-slate-200"
+                            )}>
+                                <button
+                                    type="button"
+                                    onClick={() => setParoProduccion(prev => !prev)}
+                                    disabled={isSubmitting}
+                                    className="flex items-start gap-3 text-left disabled:opacity-60 cursor-pointer"
+                                >
+                                    <span className={cn(
+                                        "mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors",
+                                        paroProduccion ? "bg-red-600 border-red-600 text-white" : "bg-white border-slate-300 text-transparent"
+                                    )}>
+                                        <Icon name="check" size="xs" />
+                                    </span>
+                                    <span className="flex flex-col gap-0.5">
+                                        <span className={cn("text-sm font-black", paroProduccion ? "text-red-700" : "text-slate-700")}>
+                                            La falla detuvo producción
+                                        </span>
+                                        <span className="text-xs text-slate-500 leading-relaxed">
+                                            Al guardar, la máquina quedará como PARO PRODUCCIÓN hasta que el técnico la atienda y confirme operación.
+                                        </span>
+                                    </span>
+                                </button>
+
+                                {paroProduccion && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-8">
+                                        <div className="flex flex-col gap-1.5">
+                                            <Label>Tiempo estimado de impacto</Label>
+                                            <DurationPicker
+                                                valueMins={impactoProduccionMins}
+                                                onChange={setImpactoProduccionMins}
+                                                disabled={isSubmitting}
+                                            />
+                                            <p className="text-[10px] text-slate-400 font-semibold">
+                                                Opcional. Sirve para reportes; no afecta el tiempo técnico.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* ── FILA 2: Planta | Área ── */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1021,18 +1334,33 @@ export const TicketFormModal = ({
                                     setPlanta(val);
                                     const posibles = AREAS_POR_PLANTA[val] || AREAS;
                                     setArea(posibles.length === 1 ? posibles[0] : '');
-                                }} error={!!fe.planta} helperText={fe.planta} disabled={isSubmitting || lockBaseFields}>
+                                }} error={!!fe.planta} helperText={fe.planta} disabled={isSubmitting || lockBaseFields || !!maquinaInfo}>
                                     <option value="" disabled hidden>Selecciona…</option>
                                     {PLANTAS.map(p => <option key={p} value={p}>{p}</option>)}
                                 </Select>
                             </div>
                             <div className="flex flex-col gap-1.5">
                                 <Label htmlFor="tf-area" error={!!fe.area}>Área / Línea *</Label>
-                                <Select id="tf-area" value={area} onChange={(e) => setArea(e.target.value)}
-                                    error={!!fe.area} helperText={fe.area} disabled={isSubmitting || lockBaseFields}>
-                                    <option value="" disabled hidden>Selecciona…</option>
-                                    {(planta && AREAS_POR_PLANTA[planta] ? AREAS_POR_PLANTA[planta] : AREAS).map(a => (
-                                        <option key={a} value={a}>{a}</option>
+                                <Select
+                                    id="tf-area"
+                                    value={area || ''}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setArea(val);
+                                        if (val) {
+                                            const plantaDeducida = deducirPlantaDeArea(val, planta);
+                                            if (plantaDeducida) {
+                                                setPlanta(plantaDeducida);
+                                            }
+                                        }
+                                    }}
+                                    error={!!fe.area}
+                                    helperText={fe.area}
+                                    disabled={isSubmitting || lockBaseFields || !!maquinaInfo}
+                                >
+                                    <option value="" disabled hidden>Selecciona área…</option>
+                                    {areasOptions.map((opt) => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
                                     ))}
                                 </Select>
                             </div>
@@ -1065,53 +1393,68 @@ export const TicketFormModal = ({
                                         error={!!fe.fechaVencimiento} helperText={fe.fechaVencimiento}
                                         disabled={isSubmitting} style={{ minWidth: 0 }} />
                                 </div>
-                                {!esRutina && (
-                                    <div className="flex flex-col gap-1.5">
-                                        <Label error={!!fe.tiempoEstimado}>Tiempo estimado *</Label>
-                                        <DurationPicker valueMins={tiempoEstimadoMins} onChange={setTiempoEstimadoMins} disabled={isSubmitting} />
-                                        {fe.tiempoEstimado && <p className="text-[10px] text-rose-600 font-bold">{fe.tiempoEstimado}</p>}
-                                    </div>
-                                )}
+                                <div className="flex flex-col gap-1.5">
+                                    <Label error={!!fe.tiempoEstimado}>Tiempo estimado *</Label>
+                                    <DurationPicker valueMins={tiempoEstimadoMins} onChange={setTiempoEstimadoMins} disabled={isSubmitting} />
+                                    {fe.tiempoEstimado && <p className="text-[10px] text-rose-600 font-bold">{fe.tiempoEstimado}</p>}
+                                </div>
                             </div>
                         )}
 
                         {/* ── DESCRIPCIÓN ── */}
-                        <div className="flex flex-col gap-1.5">
-                            <div className="flex justify-between items-center">
-                                <Label htmlFor="tf-desc" error={!!fe.descripcion}>Descripción *</Label>
-                                <div className="flex items-center gap-2">
-                                    {!descripcion && (
+                        {!mostrarDescripcion ? (
+                            <div className="flex justify-start">
+                                <button
+                                    type="button"
+                                    onClick={() => setMostrarDescripcion(true)}
+                                    className="flex items-center gap-1 text-xs font-bold text-marca-primario hover:text-marca-primario/80 transition-colors bg-marca-primario/5 hover:bg-marca-primario/10 px-3 py-1.5 rounded-lg border border-marca-primario/10 cursor-pointer"
+                                >
+                                    <Icon name="add" size="xs" />
+                                    Más detalles (Descripción)
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="flex justify-between items-center">
+                                    <Label htmlFor="tf-desc" error={!!fe.descripcion}>Detalles adicionales / Descripción</Label>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`text-[10px] font-bold ${descripcion.length >= MAX_DESCRIPCION ? 'text-estado-rechazado' : 'text-slate-400'}`}>
+                                            {descripcion.length}/{MAX_DESCRIPCION}
+                                        </span>
                                         <button
                                             type="button"
-                                            onClick={() => setDescripcion('Sin descripción.')}
+                                            onClick={() => {
+                                                setDescripcion('');
+                                                setMostrarDescripcion(false);
+                                            }}
                                             disabled={isSubmitting || lockBaseFields}
-                                            className="text-[10px] font-bold text-slate-400 hover:text-marca-primario bg-slate-100 hover:bg-marca-primario/10 px-2 py-0.5 rounded-full transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                                            className="text-[10px] text-rose-600 hover:text-rose-800 font-bold bg-rose-50 hover:bg-rose-100 px-2 py-0.5 rounded-full transition-colors cursor-pointer"
                                         >
-                                            Sin descripción
+                                            Quitar
                                         </button>
-                                    )}
-                                    <span className={`text-[10px] font-bold ${descripcion.length >= MAX_DESCRIPCION ? 'text-estado-rechazado' : 'text-slate-400'}`}>
-                                        {descripcion.length}/{MAX_DESCRIPCION}
-                                    </span>
+                                    </div>
                                 </div>
+                                <Input id="tf-desc" multiline rows={modoCarrito ? 2 : 3} value={descripcion}
+                                    onChange={(e) => setDescripcion(e.target.value.slice(0, MAX_DESCRIPCION))}
+                                    error={!!fe.descripcion} helperText={fe.descripcion}
+                                    placeholder="Describe el problema o tarea con el mayor detalle posible…"
+                                    disabled={isSubmitting || lockBaseFields} />
                             </div>
-                            <Input id="tf-desc" multiline rows={modoCarrito ? 3 : 4} value={descripcion}
-                                onChange={(e) => setDescripcion(e.target.value.slice(0, MAX_DESCRIPCION))}
-                                error={!!fe.descripcion} helperText={fe.descripcion}
-                                placeholder="Describe el problema o tarea con el mayor detalle posible…"
-                                disabled={isSubmitting || lockBaseFields} />
+                        )}
                         </div>
 
                         {modoCarrito && (
-                            <div className="flex items-center gap-3 pt-1">
-                                <Button variant="accion" icon="add_circle" onClick={handleAgregarAlCarrito} disabled={isSubmitting}>
-                                    Agregar a la lista
-                                </Button>
-                                {carrito.length > 0 && (
-                                    <span className="text-xs text-slate-500 font-medium">
-                                        {carrito.length} tarea{carrito.length !== 1 ? 's' : ''} en lista
-                                    </span>
-                                )}
+                            <div className="shrink-0 flex items-center justify-between pt-3 mt-1 border-t border-slate-100 bg-white">
+                                <div className="flex items-center gap-3">
+                                    <Button variant="accion" icon="add_circle" onClick={handleAgregarAlCarrito} disabled={isSubmitting}>
+                                        Agregar a la lista
+                                    </Button>
+                                    {carrito.length > 0 && (
+                                        <span className="text-xs text-slate-500 font-medium">
+                                            {carrito.length} tarea{carrito.length !== 1 ? 's' : ''} en lista
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         )}
                     </div>
@@ -1164,6 +1507,7 @@ export const TicketFormModal = ({
                                             tecnicos={tecnicos}
                                             onAddTecnico={handleAgregarTecnicoItem}
                                             onRemoveTecnico={handleQuitarTecnicoItem}
+                                            onCambiarTecnico={handleCambiarTecnicoItem}
                                         />
                                     ))}
                                 </div>
