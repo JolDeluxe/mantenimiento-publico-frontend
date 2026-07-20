@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 import { cn } from '@/utils/cn';
 
 export const Input = forwardRef(({ className, error, multiline, helperText, ...props }, ref) => {
-  const baseStyles = "w-full border rounded-sm px-3 py-2 text-sm focus:outline-none transition-all disabled:bg-slate-100 disabled:cursor-not-allowed bg-white";
+  const baseStyles = "w-full border rounded-sm px-3 py-2 text-sm focus:outline-none transition-all disabled:bg-slate-100 disabled:cursor-not-allowed bg-white placeholder:text-[10.5px] sm:placeholder:text-xs placeholder:text-slate-400 placeholder:font-normal";
   const stateStyles = error
     ? "border-red-500 focus:ring-2 focus:ring-red-200"
     : "border-slate-300 focus:ring-2 focus:ring-marca-secundario/30 focus:border-marca-secundario";

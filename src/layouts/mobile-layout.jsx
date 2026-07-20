@@ -16,7 +16,7 @@ export const MobileLayout = () => {
         Agregamos pb-24 (padding-bottom) para que el contenido final de la vista 
         nunca quede oculto debajo de la barra de navegación inferior.
       */}
-      <main className="flex-1 overflow-y-auto p-4 pb-24 bg-transparent custom-scrollbar relative z-10">
+      <main className="flex-1 overflow-y-auto  pb-24 bg-transparent custom-scrollbar relative z-10">
         <Outlet />
       </main>
 

@@ -71,7 +71,7 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="max-w-full mx-auto">
+    <div className="w-full max-w-full md:max-w-3xl lg:max-w-4xl mx-auto">
       <div className="p-2 lg:p-4 space-y-4">
         {isDesktop ? (
           <ProfileDesktop {...viewProps} />
