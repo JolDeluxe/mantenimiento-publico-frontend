@@ -122,9 +122,9 @@ export const ReporteDetallePage = () => {
   const esPendiente = estado === 'PENDIENTE';
 
   return (
-    <div className="relative flex flex-col min-h-full bg-slate-50/50 pb-16">
-      {/* Header Sticky */}
-      <header className="sticky top-0 left-0 w-full z-40 bg-white/70 backdrop-blur-md border-b border-white/20 px-4 py-3 flex items-center gap-4 shadow-[0_2px_10px_rgba(0,0,0,0.01)]">
+    <div className="relative flex h-full flex-col overflow-hidden bg-slate-50/50">
+      {/* Header de sección */}
+      <header className="shrink-0 w-full z-30 bg-white/70 backdrop-blur-md border-b border-white/20 px-4 py-3 flex items-center gap-4 shadow-[0_2px_10px_rgba(0,0,0,0.01)]">
         <button
           onClick={handleBack}
           className="p-2 rounded-xl bg-white/80 border border-white/30 shadow-sm active:scale-90 transition-all cursor-pointer flex items-center justify-center hover:bg-white"
@@ -141,7 +141,7 @@ export const ReporteDetallePage = () => {
       </header>
 
       {/* Cuerpo Detalle */}
-      <main className="flex-1 w-full max-w-md md:max-w-3xl lg:max-w-4xl mx-auto px-4 py-5 flex flex-col gap-6">
+      <main className="min-h-0 flex-1 w-full max-w-md md:max-w-3xl lg:max-w-4xl mx-auto px-4 py-5 flex flex-col gap-6 overflow-y-auto overscroll-none">
         
         {/* Alerta de Acción Requerida */}
         {esResuelto && (

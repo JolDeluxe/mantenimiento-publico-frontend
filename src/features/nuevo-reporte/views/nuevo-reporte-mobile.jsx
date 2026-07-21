@@ -284,7 +284,7 @@ export const NuevoReporteMobile = () => {
       </div>
 
       {/* 2. ESPACIO DE CONTENIDO CENTRAL SCROLLEABLE */}
-      <div className="flex-1 overflow-y-auto px-3 py-1 custom-scrollbar">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-none px-3 py-1 custom-scrollbar">
         
         {/* PASO 1: Categoría */}
         {step === 1 && (

@@ -15,9 +15,9 @@ export const HistoricoMobile = ({ reportes, isLoading, isError, refetch }) => {
   };
 
   return (
-    <div className="relative flex flex-col min-h-full bg-slate-50/50 pb-28">
-      {/* Header Sticky Liquid Glass */}
-      <header className="sticky top-0 left-0 w-full z-40 bg-white/70 backdrop-blur-md border-b border-white/20 px-4 py-3 flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.01)]">
+    <div className="relative flex h-full flex-col overflow-hidden bg-slate-50/50">
+      {/* Header de sección */}
+      <header className="shrink-0 w-full z-30 bg-white/70 backdrop-blur-md border-b border-white/20 px-4 py-3 flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.01)]">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-marca-primario flex items-center justify-center shadow-md">
             <Icon name="history" className="text-white text-lg" />
@@ -44,7 +44,7 @@ export const HistoricoMobile = ({ reportes, isLoading, isError, refetch }) => {
       </header>
 
       {/* Contenido Principal */}
-      <main className="flex-1 w-full max-w-md md:max-w-3xl lg:max-w-4xl mx-auto px-4 py-5 flex flex-col gap-4 overflow-y-auto">
+      <main className="min-h-0 flex-1 w-full max-w-md md:max-w-3xl lg:max-w-4xl mx-auto px-4 py-5 flex flex-col gap-4 overflow-y-auto overscroll-none">
         
         {/* Loading */}
         {isLoading && (

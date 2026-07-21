@@ -309,7 +309,7 @@ export const GlassViewToggle = ({
 export const GlassBottomNav = ({ children }) => {
     return (
         <div 
-            className="fixed bottom-0 left-0 w-full z-50 pb-[env(safe-area-inset-bottom)] pt-2 px-2"
+            className="shrink-0 w-full z-50 pb-[env(safe-area-inset-bottom)] pt-2 px-2"
             style={glassBase('surface')}
         >
             <nav className="flex items-center justify-around pb-2 relative z-10">

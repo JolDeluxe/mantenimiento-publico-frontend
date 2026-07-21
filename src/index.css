@@ -132,6 +132,14 @@
    BASE
 ───────────────────────────────────────────────────────────────────── */
 @layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
   body {
     font-family: var(--font-lectura);
     @apply antialiased text-slate-800 bg-cuadra-arena;
