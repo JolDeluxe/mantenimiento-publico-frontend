@@ -5,11 +5,13 @@ import { useAuthStore } from '@/stores/auth-store';
 const ROLES_EQUIPO = ['TECNICO', 'COORDINADOR_MTTO', 'JEFE_MTTO', 'SUPER_ADMIN'];
 
 export const ProtectedRoute = () => {
-  const { isAuthenticated, user, token, refreshToken } = useAuthStore();
+  const { isAuthenticated, user: userState, token, refreshToken } = useAuthStore();
+  const user = userState?.data ?? userState;
+  const userRol = user?.rol;
   const [loopDetected, setLoopDetected] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated && ROLES_EQUIPO.includes(user?.rol)) {
+    if (isAuthenticated && ROLES_EQUIPO.includes(userRol)) {
       let urlDestino = import.meta.env.VITE_URL_SISTEMA_INTERNO || 'http://localhost:5000';
       if (urlDestino.endsWith('/')) urlDestino = urlDestino.slice(0, -1);
 
@@ -18,14 +20,14 @@ export const ProtectedRoute = () => {
         return;
       }
 
-      const payload = encodeURIComponent(JSON.stringify({ user, token, refreshToken }));
+      const payload = encodeURIComponent(JSON.stringify({ user: userState, token, refreshToken }));
 
       // 🚀 ARREGLO 4: Destruir la sesión zombie en este portal antes de saltar
       useAuthStore.getState().logout();
 
       window.location.replace(`${urlDestino}/sso-receiver#payload=${payload}`);
     }
-  }, [isAuthenticated, user, token, refreshToken]);
+  }, [isAuthenticated, userRol, token, refreshToken]);
 
   if (loopDetected) {
     return <div className="p-10 text-red-600 font-mono font-bold text-center">🛑 BUCLE INFINITO PREVENIDO: {loopDetected}</div>;
@@ -33,7 +35,7 @@ export const ProtectedRoute = () => {
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-  if (ROLES_EQUIPO.includes(user?.rol)) {
+  if (ROLES_EQUIPO.includes(userRol)) {
       return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 space-y-6">
           <img 

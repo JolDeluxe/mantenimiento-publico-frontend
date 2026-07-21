@@ -5,32 +5,39 @@
 
 export const MODULES_CONFIG = [
   {
+    id: 'bienvenida',
+    name: 'Inicio',
+    icon: 'home',
+    route: '/bienvenida',
+    allowedRoles: ['CLIENTE_INTERNO'],
+  },
+  {
     id: 'nuevo-reporte',
     name: 'Nuevo Reporte',
     icon: 'post_add',
     route: '/nuevo-reporte',
-    allowedRoles: ['CLIENTE', 'CLIENTE_INTERNO'],
+    allowedRoles: ['CLIENTE_INTERNO'],
   },
   {
     id: 'tickets-activos',
     name: 'Activos',
     icon: 'assignment',
     route: '/activos',
-    allowedRoles: ['CLIENTE', 'CLIENTE_INTERNO'],
+    allowedRoles: ['CLIENTE_INTERNO'],
   },
   {
     id: 'tickets-historico',
     name: 'Historial',
     icon: 'history',
     route: '/historico',
-    allowedRoles: ['CLIENTE', 'CLIENTE_INTERNO'],
+    allowedRoles: ['CLIENTE_INTERNO'],
   },
   {
     id: 'notificaciones',
     name: 'Notificaciones',
     icon: 'notifications',
     route: '/notificaciones',
-    allowedRoles: ['CLIENTE', 'CLIENTE_INTERNO'],
+    allowedRoles: ['CLIENTE_INTERNO'],
     hideInMenu: true,
   }
 ];

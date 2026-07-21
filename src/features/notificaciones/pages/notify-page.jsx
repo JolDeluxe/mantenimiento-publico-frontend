@@ -229,7 +229,7 @@ export default function NotifyPage() {
     };
 
     return (
-        <div className="max-w-full mx-auto p-1 lg:p-10 m-1">
+        <div className="w-full max-w-full md:max-w-3xl lg:max-w-4xl mx-auto p-1 lg:p-10 m-1">
             {isDesktop ? <NotifyDesktop {...sharedProps} /> : <NotifyMobile {...sharedProps} />}
 
             <NotifyDetailModal isOpen={detailOpen} onClose={handleCloseModals} ticket={activeTicket} />

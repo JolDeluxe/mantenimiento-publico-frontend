@@ -3,9 +3,11 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth-store';
 
 export const RoleGuard = ({ allowedRoles = [] }) => {
-    const user = useAuthStore((state) => state.user);
+    const userState = useAuthStore((state) => state.user);
+    const user = userState?.data ?? userState;
+    const userRol = user?.rol;
 
-    if (!user?.rol || !allowedRoles.includes(user.rol)) {
+    if (!userRol || !allowedRoles.includes(userRol)) {
         return <Navigate to="/" replace />;
     }
 
