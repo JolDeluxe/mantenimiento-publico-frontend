@@ -306,7 +306,7 @@ export const NuevoReporteMobile = () => {
 
         {/* PASO 3: Vinculación o Ubicación */}
         {step === 3 && (
-          <div className="w-full">
+          <div className="min-h-0 w-full">
             {esMaquina ? (
               <>
                 {pasoMaquina === 'SCAN' && (
@@ -324,7 +324,10 @@ export const NuevoReporteMobile = () => {
                         <span>Por teclado</span>
                       </button>
                     </div>
-                    <QrScannerInput onScanSuccess={(code) => handleVincularCodigo(code)} />
+                    <QrScannerInput
+                      onScanSuccess={(code) => handleVincularCodigo(code)}
+                      isProcessing={loadingPrefill}
+                    />
                     {errorMaquina && (
                       <div className="flex items-center gap-2 text-xs font-bold text-red-600 bg-red-50 border border-red-200 p-2.5 rounded-xl mt-1">
                         <Icon name="error" size="16px" className="shrink-0 text-red-500" />

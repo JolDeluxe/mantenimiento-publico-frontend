@@ -41,7 +41,6 @@ export const AREAS_POR_PLANTA = {
     'BOLSAS',
     'TORRE 1'
   ],
-  VENTA: ['OFICINAS VENTA', 'MOSTRADOR'],
   GENERAL: ['PATIO', 'ESTACIONAMIENTO', 'COMEDOR', 'OFICINAS'],
 };
 

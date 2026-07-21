@@ -29,17 +29,7 @@ export const HistoricoDesktop = ({ reportes, isLoading, isError, refetch }) => {
           </div>
         </div>
 
-        <button
-          onClick={refetch}
-          disabled={isLoading}
-          className="p-2.5 rounded-xl bg-white border border-slate-200 shadow-sm active:scale-95 disabled:opacity-50 transition-all cursor-pointer hover:bg-slate-50 flex items-center justify-center"
-          title="Actualizar historial"
-        >
-          <Icon 
-            name="refresh" 
-            className={cn("text-slate-600 text-lg", isLoading && "animate-spin")} 
-          />
-        </button>
+        <HardReloadButton />
       </div>
 
       {/* Skeletons */}

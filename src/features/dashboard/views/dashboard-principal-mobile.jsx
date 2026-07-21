@@ -6,6 +6,7 @@ import { PrincipalTiempos } from '../components/principal/principal-tiempos';
 import { PrincipalTopList } from '../components/principal/principal-top-list';
 import { cn } from '@/utils/cn';
 import { hardReload } from '@/utils/hard-reload';
+import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 const ROL_SUBTITULO = {
     TECNICO: 'Tu rendimiento personal',
@@ -66,9 +67,12 @@ export default function DashboardPrincipalMobile({ data, loading, error, current
                         </h2>
                         {loading && <Skeleton className="h-6 w-28 rounded-full" />}
                         {!loading && periodo && (
-                            <span className="bg-marca-primario/10 text-marca-primario px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-marca-primario/20 shadow-sm">
-                                {periodo.etiqueta}
-                            </span>
+                            <div className="flex items-center gap-2">
+                                <span className="bg-marca-primario/10 text-marca-primario px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-marca-primario/20 shadow-sm">
+                                    {periodo.etiqueta}
+                                </span>
+                                <HardReloadButton />
+                            </div>
                         )}
                     </div>
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
@@ -168,15 +172,7 @@ export default function DashboardPrincipalMobile({ data, loading, error, current
 
             </div>
 
-            <GlassFab
-                icon="refresh"
-                onClick={hardReload}
-                isLoading={loading}
-                variant="neutral"
-                size={50}
-                bottom="84px"
-                right="20px"
-            />
+            </div>
         </>
     );
 }

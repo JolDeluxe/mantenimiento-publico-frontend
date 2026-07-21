@@ -21,11 +21,11 @@ export const ProfileMobile = ({
   const [editing, setEditing] = useState(false);
   const [activeMenu, setActiveMenu] = useState('general');
 
-  if (loading) return <div className="flex justify-center p-10"><Spinner size="lg" /></div>;
-  if (!profile) return <div className="text-center text-red-600 p-10"><Icon name="error" size="lg" /></div>;
+  if (loading) return <div className="flex h-full items-center justify-center p-10"><Spinner size="lg" /></div>;
+  if (!profile) return <div className="flex h-full flex-col items-center justify-center text-center text-red-600 p-10"><Icon name="error" size="lg" /></div>;
 
   return (
-    <div className="space-y-5 pb-6">
+    <div className="h-full min-h-0 overflow-y-auto overscroll-none custom-scrollbar space-y-5 pb-6">
 
       {/* Encabezado de Vista Móvil */}
       <div className="px-1 mb-2">

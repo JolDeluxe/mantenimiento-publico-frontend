@@ -35,19 +35,8 @@ export const ActivosDesktop = ({ reportes = [], isLoading, isError, refetch }) =
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Botón Refrescar */}
-          <button
-            onClick={refetch}
-            disabled={isLoading}
-            className="p-2.5 rounded-xl bg-white border border-slate-200 shadow-xs active:scale-95 disabled:opacity-50 transition-all cursor-pointer hover:bg-slate-50 flex items-center justify-center"
-            title="Actualizar listado"
-          >
-            <Icon 
-              name="refresh" 
-              size="18px"
-              className={cn("text-slate-600", isLoading && "animate-spin")} 
-            />
-          </button>
+          {/* Botón Refrescar Moderno (Hard Reload) */}
+        <HardReloadButton />
 
           {/* Botón Nuevo Reporte */}
           <Button

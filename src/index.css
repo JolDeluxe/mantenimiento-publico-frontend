@@ -234,4 +234,19 @@
     -webkit-font-smoothing: antialiased;
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
+
+  .cuadra-qr-reader,
+  .cuadra-qr-reader > div,
+  .cuadra-qr-reader video {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .cuadra-qr-reader video {
+    object-fit: cover !important;
+  }
+
+  .cuadra-qr-reader canvas {
+    display: none !important;
+  }
 }

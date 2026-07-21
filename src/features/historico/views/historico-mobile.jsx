@@ -30,17 +30,8 @@ export const HistoricoMobile = ({ reportes, isLoading, isError, refetch }) => {
           </div>
         </div>
 
-        {/* Botón Refrescar */}
-        <button
-          onClick={refetch}
-          disabled={isLoading}
-          className="p-2 rounded-xl bg-white/80 border border-white/30 shadow-sm active:scale-95 disabled:opacity-50 transition-all cursor-pointer"
-        >
-          <Icon 
-            name="refresh" 
-            className={cn("text-slate-600 text-lg", isLoading && "animate-spin")} 
-          />
-        </button>
+        {/* Botón Refrescar Moderno (Hard Reload) */}
+        <HardReloadButton />
       </header>
 
       {/* Contenido Principal */}
