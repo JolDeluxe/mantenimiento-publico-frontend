@@ -88,7 +88,7 @@ export const WelcomeDesktop = () => {
             "
           >
             <img
-              src="/img/escaneo-qr.png"
+              src="/img/escaneo-qr.webp"
               alt="Escaneo QR"
               className="
                 h-full w-full

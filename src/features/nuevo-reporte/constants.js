@@ -52,7 +52,7 @@ export const CATEGORIAS_REPORTE = [
     id: 'MAQUINARIA',
     nombre: 'Maquinaria',
     icon: 'precision_manufacturing',
-    imagen: '/img/escaneo-qr.png',
+    imagen: '/img/escaneo-qr.webp',
     descripcion: 'Equipos y maquinaria de producción.',
     ayuda: 'Selecciona un incidente y busca el código del equipo para vincular automáticamente su ubicación.',
     incidentes: [
@@ -125,7 +125,7 @@ export const CATEGORIAS_REPORTE = [
     id: 'INFRAESTRUCTURA',
     nombre: 'Infraestructura',
     icon: 'domain',
-    imagen: '/img/escaneo-qr.png',
+    imagen: '/img/escaneo-qr.webp',
     descripcion: 'Pisos, muros, techos e instalaciones.',
     ayuda: 'Indica el área y describe el problema en pisos, muros, techos o instalaciones fijas.',
     incidentes: [
@@ -180,7 +180,7 @@ export const CATEGORIAS_REPORTE = [
     id: 'MOBILIARIO',
     nombre: 'Mobiliario',
     icon: 'chair',
-    imagen: '/img/escaneo-qr.png',
+    imagen: '/img/escaneo-qr.webp',
     descripcion: 'Sillas, mesas, estantes y mobiliario.',
     ayuda: 'Describe el mueble afectado, el daño presentado y su ubicación en la planta.',
     incidentes: [
@@ -226,7 +226,7 @@ export const CATEGORIAS_REPORTE = [
     id: 'ELECTRICO',
     nombre: 'Eléctrico e Iluminación',
     icon: 'electric_bolt',
-    imagen: '/img/escaneo-qr.png',
+    imagen: '/img/escaneo-qr.webp',
     descripcion: 'Contactos, lámparas y fallas eléctricas.',
     ayuda: 'Especifica la lámpara, contacto o interruptor averiado y su ubicación exacta.',
     incidentes: [
@@ -281,7 +281,7 @@ export const CATEGORIAS_REPORTE = [
     id: 'CLIMATIZACION',
     nombre: 'Climas y Ventilación',
     icon: 'hvac',
-    imagen: '/img/escaneo-qr.png',
+    imagen: '/img/escaneo-qr.webp',
     descripcion: 'Aire acondicionado y ventilación.',
     ayuda: 'Detalla el tipo de falla en el equipo de clima, minisplit o extractor de aire.',
     incidentes: [
@@ -336,7 +336,7 @@ export const CATEGORIAS_REPORTE = [
     id: 'PLOMERIA',
     nombre: 'Plomería y Sanitarios',
     icon: 'water_drop',
-    imagen: '/img/escaneo-qr.png',
+    imagen: '/img/escaneo-qr.webp',
     descripcion: 'Fugas, tuberías, lavabos y sanitarios.',
     ayuda: 'Reporta fugas de agua, lavabos u obstrucciones de drenaje para atención urgente.',
     incidentes: [
@@ -391,7 +391,7 @@ export const CATEGORIAS_REPORTE = [
     id: 'OTRO',
     nombre: 'Otro',
     icon: 'more_horiz',
-    imagen: '/img/escaneo-qr.png',
+    imagen: '/img/escaneo-qr.webp',
     descripcion: 'Cualquier incidencia no clasificada.',
     ayuda: 'Describe detalladamente el requerimiento o falla que no encaje en otras categorías.',
     incidentes: [

@@ -64,7 +64,7 @@ export const WelcomeMobile = () => {
 
             {/* Imagen completa */}
             <img
-              src="/img/escaneo-qr.png"
+              src="/img/escaneo-qr.webp"
               alt="Escaneo de código QR en maquinaria"
               className="absolute inset-0 h-full w-full object-cover object-[58%_center]"
             />
