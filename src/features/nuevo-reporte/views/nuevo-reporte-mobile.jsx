@@ -165,6 +165,7 @@ export const NuevoReporteMobile = () => {
       descripcion.trim().length >= 10 &&
       (!incidente?.permiteTituloPersonalizado || (tituloPersonalizado && tituloPersonalizado.trim().length >= 10))
   );
+  const isScanStep = step === 3 && esMaquina && pasoMaquina === 'SCAN';
 
   const stepValidations = {
     1: isStep1Valid,
@@ -284,7 +285,11 @@ export const NuevoReporteMobile = () => {
       </div>
 
       {/* 2. ESPACIO DE CONTENIDO CENTRAL SCROLLEABLE */}
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-none px-3 py-1 custom-scrollbar">
+      <div
+        className={`min-h-0 flex-1 overscroll-none px-3 py-1 pb-2 custom-scrollbar ${
+          isScanStep ? 'overflow-hidden' : 'overflow-y-auto'
+        }`}
+      >
         
         {/* PASO 1: Categoría */}
         {step === 1 && (
@@ -306,12 +311,12 @@ export const NuevoReporteMobile = () => {
 
         {/* PASO 3: Vinculación o Ubicación */}
         {step === 3 && (
-          <div className="min-h-0 w-full">
+          <div className={isScanStep ? 'h-full min-h-0 w-full flex flex-col' : 'min-h-0 w-full'}>
             {esMaquina ? (
               <>
                 {pasoMaquina === 'SCAN' && (
-                  <div className="bg-white/85 backdrop-blur-xl border border-white/45 p-3.5 rounded-2xl shadow-xs flex flex-col gap-3">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <div className="h-full min-h-0 bg-white/85 backdrop-blur-xl border border-white/45 p-3 rounded-2xl shadow-xs flex flex-col gap-2 overflow-hidden">
+                    <div className="shrink-0 flex items-center justify-between border-b border-slate-100 pb-1.5">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                         Escaneo QR de Equipo
                       </span>
@@ -324,16 +329,14 @@ export const NuevoReporteMobile = () => {
                         <span>Por teclado</span>
                       </button>
                     </div>
-                    <QrScannerInput
-                      onScanSuccess={(code) => handleVincularCodigo(code)}
-                      isProcessing={loadingPrefill}
-                    />
-                    {errorMaquina && (
-                      <div className="flex items-center gap-2 text-xs font-bold text-red-600 bg-red-50 border border-red-200 p-2.5 rounded-xl mt-1">
-                        <Icon name="error" size="16px" className="shrink-0 text-red-500" />
-                        <span>{errorMaquina}</span>
-                      </div>
-                    )}
+                    <div className="min-h-0 flex-1 overflow-hidden flex items-center justify-center">
+                      <QrScannerInput
+                        onScanSuccess={(code) => handleVincularCodigo(code)}
+                        isProcessing={loadingPrefill}
+                        validationError={errorMaquina}
+                        onRetry={() => setErrorMaquina('')}
+                      />
+                    </div>
                   </div>
                 )}
 
@@ -565,7 +568,7 @@ export const NuevoReporteMobile = () => {
       </div>
 
       {/* 3. BOTONERA DE ACCIÓN FIJA ABAJO CON LIQUID GLASS */}
-      <div className="shrink-0 p-3 pt-1.5 z-30">
+      <div className="shrink-0 p-2.5 pt-1 z-30">
         {step === 1 && (
           <button
             type="button"
@@ -583,7 +586,7 @@ export const NuevoReporteMobile = () => {
             <button
               type="button"
               onClick={handlePrevStep}
-              className="relative overflow-hidden h-11 px-3.5 text-[10.5px] font-extrabold uppercase tracking-wider rounded-2xl bg-slate-800/80 hover:bg-slate-800 active:bg-slate-900 text-white backdrop-blur-xl border border-white/20 shadow-xs transition-all cursor-pointer flex items-center justify-center shrink-0"
+              className="relative overflow-hidden h-10 px-3 text-[10px] font-extrabold uppercase tracking-wider rounded-2xl bg-slate-800/80 hover:bg-slate-800 active:bg-slate-900 text-white backdrop-blur-xl border border-white/20 shadow-xs transition-all cursor-pointer flex items-center justify-center shrink-0"
             >
               <GlassSheen />
               <span className="relative z-10">← Anterior</span>
@@ -592,7 +595,7 @@ export const NuevoReporteMobile = () => {
               type="button"
               disabled={!isStep2Valid}
               onClick={handleNextStep}
-              className="relative overflow-hidden flex-1 h-11 text-[10.5px] font-extrabold uppercase tracking-wider rounded-2xl bg-emerald-600/90 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white backdrop-blur-xl border border-white/40 shadow-[0_10px_30px_rgba(16,185,129,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] transition-all cursor-pointer flex items-center justify-center gap-1 min-w-0"
+              className="relative overflow-hidden flex-1 h-10 text-[10px] font-extrabold uppercase tracking-wider rounded-2xl bg-emerald-600/90 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white backdrop-blur-xl border border-white/40 shadow-[0_10px_30px_rgba(16,185,129,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] transition-all cursor-pointer flex items-center justify-center gap-1 min-w-0"
             >
               <GlassSheen />
               <span className="relative z-10 truncate">Continuar a {esMaquina ? 'Equipo' : 'Ubicación'}</span>
@@ -606,7 +609,7 @@ export const NuevoReporteMobile = () => {
             <button
               type="button"
               onClick={handlePrevStep}
-              className="relative overflow-hidden h-11 px-3.5 text-[10.5px] font-extrabold uppercase tracking-wider rounded-2xl bg-slate-800/80 hover:bg-slate-800 active:bg-slate-900 text-white backdrop-blur-xl border border-white/20 shadow-xs transition-all cursor-pointer flex items-center justify-center shrink-0"
+              className="relative overflow-hidden h-10 px-3 text-[10px] font-extrabold uppercase tracking-wider rounded-2xl bg-slate-800/80 hover:bg-slate-800 active:bg-slate-900 text-white backdrop-blur-xl border border-white/20 shadow-xs transition-all cursor-pointer flex items-center justify-center shrink-0"
             >
               <GlassSheen />
               <span className="relative z-10">← Anterior</span>
@@ -615,7 +618,7 @@ export const NuevoReporteMobile = () => {
               type="button"
               disabled={!isStep3Valid}
               onClick={handleNextStep}
-              className="relative overflow-hidden flex-1 h-11 text-[10.5px] font-extrabold uppercase tracking-wider rounded-2xl bg-emerald-600/90 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white backdrop-blur-xl border border-white/40 shadow-[0_10px_30px_rgba(16,185,129,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] transition-all cursor-pointer flex items-center justify-center gap-1 min-w-0"
+              className="relative overflow-hidden flex-1 h-10 text-[10px] font-extrabold uppercase tracking-wider rounded-2xl bg-emerald-600/90 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white backdrop-blur-xl border border-white/40 shadow-[0_10px_30px_rgba(16,185,129,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] transition-all cursor-pointer flex items-center justify-center gap-1 min-w-0"
             >
               <GlassSheen />
               <span className="relative z-10 truncate">Continuar a Detalles</span>
