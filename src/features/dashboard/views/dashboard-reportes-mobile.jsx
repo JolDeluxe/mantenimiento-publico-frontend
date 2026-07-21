@@ -2,6 +2,7 @@ import React from 'react';
 import { GlassFab } from '@/components/ui/z_index';
 import { ReportesConstruccion } from '../components/reportes/reportes-construccion';
 import { hardReload } from '@/utils/hard-reload';
+import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 export default function DashboardReportesMobile({ loading, onRefresh }) {
     return (

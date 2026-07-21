@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@/components/ui/z_index';
+import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 /**
  * Vista móvil para la página de bienvenida y guía del cliente.

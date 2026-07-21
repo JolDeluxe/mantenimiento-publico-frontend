@@ -15,6 +15,7 @@ import { TicketsEmptyState } from '../components/tickets-empty-state';
 import { ROLES_ADMIN } from '../constants';
 import { cn } from '@/utils/cn';
 import { hardReload } from '@/utils/hard-reload';
+import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 const SKELETON_COUNT = 5;
 

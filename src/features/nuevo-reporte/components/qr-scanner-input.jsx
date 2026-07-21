@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { Icon } from '@/components/ui/z_index';
 import { cn } from '@/utils/cn';
+import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 /**
  * Lector de QR con UI propia.

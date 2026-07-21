@@ -6,6 +6,7 @@ import { Icon } from '@/components/ui/z_index';
 // Vistas unificadas responsivas de la feature
 import { NuevoReporteDesktop } from '../views/nuevo-reporte-desktop';
 import { NuevoReporteMobile } from '../views/nuevo-reporte-mobile';
+import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 /**
  * Controlador responsivo para la creación de reportes.

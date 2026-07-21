@@ -3,6 +3,7 @@ import React from 'react';
 import { Icon, Skeleton, GlassFab } from '@/components/ui/z_index';
 import { PrincipalTecnicoDetalle } from '../components/principal/tecnico/principal-tecnico-detalle';
 import { hardReload } from '@/utils/hard-reload';
+import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 export default function DashboardTecnicoMobile({ data, loading, error, currentUser, onRefresh }) {
     // O Controlador Mobile gere a estrutura base, o tratamento de erros global 

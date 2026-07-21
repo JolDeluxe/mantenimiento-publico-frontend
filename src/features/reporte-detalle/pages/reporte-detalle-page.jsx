@@ -10,6 +10,7 @@ import { cn } from '@/utils/cn';
 import { changeReporteStatus } from '../api/reporte-detalle-api';
 import { notify } from '@/components/notification/adaptive-notify';
 import { useQueryClient } from '@tanstack/react-query';
+import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 // Traductores lógicos
 const ROL_LABEL = {

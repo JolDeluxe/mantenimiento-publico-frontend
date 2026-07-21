@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ReporteCard } from '@/features/reporte-detalle/components/reporte-card';
 import { Icon, Button } from '@/components/ui/z_index';
 import { cn } from '@/utils/cn';
+import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 /**
  * Vista de escritorio para el listado de reportes activos.

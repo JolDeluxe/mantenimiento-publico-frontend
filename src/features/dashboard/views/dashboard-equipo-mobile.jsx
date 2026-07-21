@@ -6,6 +6,7 @@ import { TecnicoDetalleModal } from '../components/equipo/equipo-detalle-modal';
 import { EquipoCambioRol } from '../components/equipo/equipo-cambio-rol';
 import DashboardEmptyState from '../components/dashboard-empty-state';
 import { hardReload } from '@/utils/hard-reload';
+import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 const GrupoMobile = ({ titulo, icon, personas, onViewDetail }) => {
     if (personas.length === 0) return null;

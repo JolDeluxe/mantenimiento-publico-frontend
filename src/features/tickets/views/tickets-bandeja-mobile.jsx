@@ -5,6 +5,7 @@ import { BandejaTicketCard } from '../components/bandeja/bandeja-ticket-card';
 import { BandejaFiltro } from '../components/bandeja/bandeja-filtro';
 import { TicketsEmptyState } from '../components/tickets-empty-state';
 import { hardReload } from '@/utils/hard-reload';
+import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 const BandejaMobileSkeleton = () => (
     <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">

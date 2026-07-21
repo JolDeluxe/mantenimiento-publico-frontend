@@ -5,6 +5,7 @@ import { PlantaDetalle } from '../components/area/area-detalle-planta';
 import { AreaDetalle } from '../components/area/area-detalle-area';
 import DashboardEmptyState from '../components/dashboard-empty-state';
 import { hardReload } from '@/utils/hard-reload';
+import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 const SkeletonPlanta = () => (
     <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
