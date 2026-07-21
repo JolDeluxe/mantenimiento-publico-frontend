@@ -145,7 +145,22 @@ export const QrScannerInput = ({
   const showRetry = status === 'invalid' || status === 'error';
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col items-center justify-center gap-1.5">
+    <div className="flex h-full min-h-0 w-full flex-col items-center justify-center gap-2">
+      <div className="flex w-[min(100%,280px,42dvh)] max-w-full items-center justify-between gap-2">
+        <div className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-slate-900/90 px-2.5 py-1 text-[8.5px] font-extrabold uppercase tracking-wider text-white border border-slate-800/60">
+          <Icon name="photo_camera" size="12px" />
+          <span className="truncate">Cámara trasera</span>
+        </div>
+        <button
+          type="button"
+          onClick={handleRetry}
+          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-[#66494a] border border-slate-200 shadow-sm active:scale-95"
+          aria-label="Reiniciar escaneo"
+        >
+          <Icon name="refresh" size="16px" />
+        </button>
+      </div>
+
       <div className="relative aspect-square w-[min(100%,280px,42dvh)] max-w-full overflow-hidden rounded-2xl border border-white/50 bg-slate-950 shadow-[0_10px_30px_rgba(15,23,42,0.16)]">
         <div className="relative h-full w-full overflow-hidden bg-slate-900">
           <div
@@ -155,77 +170,48 @@ export const QrScannerInput = ({
               status !== 'scanning' && 'opacity-35'
             )}
           />
-
-          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,transparent_28%,rgba(15,23,42,0.50)_29%,rgba(15,23,42,0.72)_100%)]" />
-
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="relative h-[64%] w-[64%] max-h-[190px] max-w-[190px] rounded-3xl border border-white/45 shadow-[0_0_0_999px_rgba(15,23,42,0.16)]">
-              <span className="absolute -top-0.5 -left-0.5 h-6 w-6 rounded-tl-3xl border-t-4 border-l-4 border-emerald-400" />
-              <span className="absolute -top-0.5 -right-0.5 h-6 w-6 rounded-tr-3xl border-t-4 border-r-4 border-emerald-400" />
-              <span className="absolute -bottom-0.5 -left-0.5 h-6 w-6 rounded-bl-3xl border-b-4 border-l-4 border-emerald-400" />
-              <span className="absolute -bottom-0.5 -right-0.5 h-6 w-6 rounded-br-3xl border-b-4 border-r-4 border-emerald-400" />
-              {status === 'scanning' && (
-                <span className="absolute left-3 right-3 top-1/2 h-0.5 rounded-full bg-emerald-300/90 shadow-[0_0_18px_rgba(110,231,183,0.8)] animate-pulse" />
-              )}
-            </div>
-          </div>
-
-          <div className="absolute left-2.5 right-2.5 top-2.5 flex items-center justify-between gap-2">
-            <div className="inline-flex min-w-0 items-center gap-1.5 rounded-full bg-black/35 px-2.5 py-0.5 text-[8.5px] font-extrabold uppercase tracking-wider text-white backdrop-blur-md border border-white/15">
-              <Icon name="photo_camera" size="12px" />
-              <span className="truncate">Cámara trasera</span>
-            </div>
-            <button
-              type="button"
-              onClick={handleRetry}
-              className="pointer-events-auto inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-[#66494a] backdrop-blur-md border border-white/70 shadow-sm active:scale-95"
-              aria-label="Reiniciar escaneo"
-            >
-              <Icon name="refresh" size="16px" />
-            </button>
-          </div>
-
-          {status === 'scanning' && (
-            <div className="absolute inset-x-2.5 bottom-2.5 rounded-xl border border-white/15 bg-black/30 px-2.5 py-1.5 text-white/85 backdrop-blur-md">
-              <div className="flex min-w-0 items-center gap-2">
-                <Icon name="qr_code_scanner" size="14px" className="shrink-0" />
-                <p className="truncate text-[10px] font-semibold">
-                  Apunta al código QR del equipo.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {showStatusPanel && (
-            <div className="absolute inset-x-2.5 bottom-2.5 rounded-xl border border-white/20 bg-black/50 p-2 text-white backdrop-blur-xl">
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white/15">
-                  <Icon
-                    name={currentCopy.icon}
-                    size="18px"
-                    className={cn(status === 'starting' && 'animate-spin')}
-                  />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[10px] font-extrabold uppercase tracking-wider">{currentCopy.title}</p>
-                  <p className="mt-0.5 line-clamp-2 text-[9.5px] leading-snug font-medium text-white/75">
-                    {currentCopy.detail}
-                  </p>
-                </div>
-                {showRetry && (
-                  <button
-                    type="button"
-                    onClick={handleRetry}
-                    className="ml-auto shrink-0 rounded-lg bg-white/15 px-2 py-1.5 text-[8.5px] font-extrabold uppercase tracking-wider text-white active:scale-95"
-                  >
-                    Reintentar
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {status === 'scanning' && (
+        <div className="flex w-[min(100%,280px,42dvh)] max-w-full items-center gap-2 rounded-xl border border-slate-200/70 bg-white/80 px-3 py-2 text-slate-600">
+          <Icon name="qr_code_scanner" size="14px" className="shrink-0 text-slate-500" />
+          <p className="truncate text-[10px] font-semibold">
+            Apunta al código QR del equipo.
+          </p>
+        </div>
+      )}
+
+      {showStatusPanel && (
+        <div className="w-[min(100%,280px,42dvh)] max-w-full rounded-xl border border-slate-200/70 bg-white/85 p-2 text-slate-700">
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-[#66494a]">
+              <Icon
+                name={currentCopy.icon}
+                size="18px"
+                className={cn(status === 'starting' && 'animate-spin')}
+              />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-800">
+                {currentCopy.title}
+              </p>
+              <p className="mt-0.5 line-clamp-2 text-[9.5px] leading-snug font-medium text-slate-500">
+                {currentCopy.detail}
+              </p>
+            </div>
+            {showRetry && (
+              <button
+                type="button"
+                onClick={handleRetry}
+                className="ml-auto shrink-0 rounded-lg bg-[#66494a]/10 px-2 py-1.5 text-[8.5px] font-extrabold uppercase tracking-wider text-[#66494a] active:scale-95"
+              >
+                Reintentar
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
