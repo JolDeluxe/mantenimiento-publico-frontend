@@ -22,6 +22,7 @@ export default function DashboardGeneralMobile({ data, loading, onRefresh }) {
     return (
         <>
             <div className="flex flex-col gap-4 animate-in fade-in duration-300 pb-28">
+        <HardReloadButton />
                 {!tieneDatos && !loading ? (
                     <DashboardEmptyState
                         isMobile
@@ -62,15 +63,7 @@ export default function DashboardGeneralMobile({ data, loading, onRefresh }) {
                 )}
             </div>
 
-            <GlassFab
-                icon="refresh"
-                onClick={hardReload}
-                isLoading={loading}
-                variant="neutral"
-                size={50}
-                bottom="84px"
-                right="20px"
-            />
+            
         </>
     );
 }

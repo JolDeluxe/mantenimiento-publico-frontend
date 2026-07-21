@@ -11,6 +11,7 @@ const GrupoMobile = ({ titulo, icon, personas, onViewDetail }) => {
     if (personas.length === 0) return null;
     return (
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <HardReloadButton />
             <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-2 bg-slate-50">
                 <Icon name={icon} size="xs" className="text-marca-primario" />
                 <h3 className="text-xs font-bold text-slate-800">{titulo}</h3>
@@ -102,15 +103,7 @@ export default function DashboardEquipoMobile({
                 )}
             </div>
 
-            <GlassFab
-                icon="refresh"
-                onClick={hardReload}
-                isLoading={loading}
-                variant="neutral"
-                size={50}
-                bottom="84px"
-                right="20px"
-            />
+            
 
             {detalleTarget && (
                 <TecnicoDetalleModal

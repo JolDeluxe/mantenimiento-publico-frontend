@@ -14,6 +14,7 @@ export default function DashboardTecnicoMobile({ data, loading, error, currentUs
                 {/* Cabeçalho da Vista */}
                 <div className="flex flex-col gap-1.5 mb-6">
                     <div className="flex items-center justify-between">
+        <HardReloadButton />
                         <h2 className="fuente-titulos text-3xl text-marca-primario uppercase tracking-wide">
                             Panel Operativo
                         </h2>
@@ -43,15 +44,7 @@ export default function DashboardTecnicoMobile({ data, loading, error, currentUs
             </div>
 
             {/* Elemento Absoluto - Liquid Glass */}
-            <GlassFab
-                icon="refresh"
-                onClick={hardReload}
-                isLoading={loading}
-                variant="neutral"
-                size={56}
-                bottom="84px"
-                right="20px"
-            />
+            
         </>
     );
 }

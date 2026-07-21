@@ -4,6 +4,7 @@ import { ProfileSummaryCard } from '../components/profile-summary-card';
 import { ProfileInfoCard } from '../components/profile-info-card';
 import { ProfileGeneralForm } from '../components/profile-general-form';
 import { ProfilePasswordForm } from '../components/profile-password-form';
+import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 export const ProfileMobile = ({
   profile,
@@ -28,13 +29,16 @@ export const ProfileMobile = ({
     <div className="h-full min-h-0 overflow-y-auto overscroll-none custom-scrollbar space-y-5 pb-6">
 
       {/* Encabezado de Vista Móvil */}
-      <div className="px-1 mb-2">
-        <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight fuente-titulos">
-          Mi Perfil
-        </h1>
-        <p className="text-sm text-gray-500 mt-1 font-medium leading-snug">
-          Gestiona tu información personal y configuración de seguridad.
-        </p>
+      <div className="px-1 mb-2 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight fuente-titulos">
+            Mi Perfil
+          </h1>
+          <p className="text-sm text-gray-500 mt-1 font-medium leading-snug">
+            Gestiona tu información personal y configuración de seguridad.
+          </p>
+        </div>
+        <HardReloadButton />
       </div>
 
       <ProfileSummaryCard

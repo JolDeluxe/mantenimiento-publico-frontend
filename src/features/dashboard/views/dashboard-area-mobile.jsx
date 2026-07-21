@@ -8,6 +8,7 @@ import { hardReload } from '@/utils/hard-reload';
 
 const SkeletonPlanta = () => (
     <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <HardReloadButton />
         <div className="flex items-center gap-3 px-4 py-3.5">
             <Skeleton className="w-9 h-9 rounded-xl shrink-0" />
             <div className="flex flex-col gap-1.5 flex-1">
@@ -83,15 +84,7 @@ export default function DashboardAreaMobile({
                 )}
             </div>
 
-            <GlassFab
-                icon="refresh"
-                onClick={hardReload}
-                isLoading={loading}
-                variant="neutral"
-                size={50}
-                bottom="84px"
-                right="20px"
-            />
+            
         </>
     );
 }

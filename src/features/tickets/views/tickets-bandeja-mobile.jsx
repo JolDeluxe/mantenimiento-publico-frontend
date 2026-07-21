@@ -8,6 +8,7 @@ import { hardReload } from '@/utils/hard-reload';
 
 const BandejaMobileSkeleton = () => (
     <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
+        <HardReloadButton />
         <div className="flex justify-between items-start">
             <Skeleton className="h-5 w-1/2 rounded-md" />
             <Skeleton className="h-5 w-16 rounded-full" />
@@ -97,15 +98,7 @@ export const TicketsBandejaMobile = ({
             )}
 
             <div className="md:hidden">
-                <GlassFab
-                    icon="refresh"
-                    onClick={hardReload}
-                    isLoading={isLoading}
-                    variant="neutral"
-                    size={50}
-                    bottom={fabRefreshBottom}
-                    right="20px"
-                />
+                
 
                 {onOpenCreate && (
                     <GlassFab

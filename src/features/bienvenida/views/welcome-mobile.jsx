@@ -37,6 +37,7 @@ export const WelcomeMobile = () => {
             </p>
           </div>
         </div>
+        <HardReloadButton />
       </header>
 
       {/* Contenido Táctil - Ancho Completo */}

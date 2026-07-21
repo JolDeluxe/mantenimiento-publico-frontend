@@ -36,6 +36,7 @@ export const NuevoReportePage = () => {
             </p>
           </div>
         </div>
+        <HardReloadButton />
       </header>      
       )}
 

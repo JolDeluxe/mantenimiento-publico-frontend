@@ -91,6 +91,7 @@ export const NotifyMobile = ({
     return (
         <>
             <div className="flex items-center justify-between mb-3">
+        <HardReloadButton />
                 <GlassToggle
                     soloNoLeidas={soloNoLeidas}
                     onToggle={onToggleNoLeidas}
@@ -137,15 +138,7 @@ export const NotifyMobile = ({
                 )}
             </div>
 
-            <GlassFab
-                icon="refresh"
-                onClick={hardReload}
-                isLoading={loading && !loadingMore}
-                variant="neutral"
-                size={50}
-                bottom={fabRefreshBottom}
-                right="20px"
-            />
+            
 
             {meta.noLeidas > 0 && (
                 <GlassFab

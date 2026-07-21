@@ -138,6 +138,7 @@ export const ReporteDetallePage = () => {
             Reporte #{id}
           </p>
         </div>
+        <HardReloadButton />
       </header>
 
       {/* Cuerpo Detalle */}
