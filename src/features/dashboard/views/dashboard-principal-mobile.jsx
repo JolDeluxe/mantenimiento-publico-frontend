@@ -172,7 +172,6 @@ export default function DashboardPrincipalMobile({ data, loading, error, current
 
             </div>
 
-            </div>
         </>
     );
 }
