@@ -433,11 +433,11 @@ export const NuevoReporteMobile = () => {
 
         {/* PASO 4: Detalles (Fase 1: Redacción | Fase 2: Resumen Pre-Envío) */}
         {step === 4 && (
-          <div className="flex flex-col gap-3.5 w-full">
+          <div className="flex flex-col gap-2 w-full">
             {!modoResumenFinal ? (
               /* FASE 1: Redacción de Descripción y Título */
               <>
-                <div className="bg-white/85 backdrop-blur-xl border border-white/45 p-3.5 rounded-2xl shadow-xs">
+                <div className="bg-white/85 backdrop-blur-xl border border-white/45 p-3 rounded-2xl shadow-xs">
                   <TituloDisplay
                     incidente={incidente}
                     tituloPersonalizado={tituloPersonalizado}
@@ -447,17 +447,17 @@ export const NuevoReporteMobile = () => {
                   />
                 </div>
 
-                <div className="bg-white/85 backdrop-blur-xl border border-white/45 p-4 rounded-2xl shadow-xs flex flex-col gap-3.5">
-                  <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                <div className="bg-white/85 backdrop-blur-xl border border-white/45 p-3 rounded-2xl shadow-xs flex flex-col gap-2">
+                  <div className="flex items-center gap-2 border-b border-slate-100 pb-1.5">
                     <Icon name="edit_note" size="16px" className="text-emerald-600" />
                     <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                      Detalles y Descripción de la Falla
+                      Detalles y Descripción
                     </h4>
                   </div>
 
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-1">
                     <div className="flex justify-between items-center px-0.5">
-                      <Label htmlFor="descripcionInput" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      <Label htmlFor="descripcionInput" className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
                         Descripción del problema *
                       </Label>
                       <span className="text-[9px] font-bold text-slate-400">
@@ -470,18 +470,18 @@ export const NuevoReporteMobile = () => {
                       multiline={true}
                       value={descripcion}
                       onChange={(e) => setDescripcion(e.target.value)}
-                      placeholder="Describe la falla observada, sintomas o contexto (mínimo 10 caracteres)..."
+                      placeholder="Describe la falla observada..."
                       error={submitted && (!descripcion.trim() || descripcion.trim().length < 10)}
                       helperText={
                         submitted && (!descripcion.trim() || descripcion.trim().length < 10)
-                          ? 'La descripción es obligatoria y debe tener al menos 10 caracteres.'
+                          ? 'Mínimo 10 caracteres.'
                           : ''
                       }
-                      className="min-h-28 bg-white/60 border-slate-200 focus:bg-white rounded-xl p-3 text-xs placeholder:text-[10.5px]"
+                      className="min-h-[70px] bg-white/60 border-slate-200 focus:bg-white rounded-xl p-2.5 text-xs placeholder:text-[10.5px]"
                     />
                   </div>
                   
-                  <div className="px-1 mt-1 border-t border-slate-100 pt-3">
+                  <div className="px-1 border-t border-slate-100 pt-1">
                     <ImageUploader imagenes={imagenes} onImagesChange={setImagenes} maxImages={3} />
                   </div>
                 </div>

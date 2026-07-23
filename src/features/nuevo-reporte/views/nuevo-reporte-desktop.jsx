@@ -445,8 +445,8 @@ export const NuevoReporteDesktop = () => {
                   </span>
                 </div>
 
-                <div className="flex-1 overflow-y-auto max-h-[350px] pr-1 flex flex-col gap-3.5">
-                  <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs">
+                <div className="flex-1 overflow-y-auto max-h-[500px] pr-1 flex flex-col gap-2">
+                  <div className="p-3 rounded-2xl bg-white border border-slate-200 shadow-2xs">
                     <TituloDisplay
                       incidente={incidente}
                       tituloPersonalizado={tituloPersonalizado}
@@ -456,7 +456,7 @@ export const NuevoReporteDesktop = () => {
                     />
                   </div>
 
-                  <div className="flex flex-col gap-1.5 p-3.5 rounded-2xl bg-white border border-slate-200 shadow-2xs">
+                  <div className="flex flex-col gap-1.5 p-3 rounded-2xl bg-white border border-slate-200 shadow-2xs">
                     <div className="flex justify-between items-center px-0.5">
                       <Label htmlFor="descripcionDesktopInput" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                         Descripción detallada del problema *
@@ -471,14 +471,14 @@ export const NuevoReporteDesktop = () => {
                       multiline={true}
                       value={descripcion}
                       onChange={(e) => setDescripcion(e.target.value)}
-                      placeholder="Describe la falla observada, síntomas o detalles del problema (mínimo 10 caracteres)..."
+                      placeholder="Describe la falla observada..."
                       error={submitted && (!descripcion.trim() || descripcion.trim().length < 10)}
                       helperText={
                         submitted && (!descripcion.trim() || descripcion.trim().length < 10)
-                          ? 'La descripción es obligatoria y debe tener al menos 10 caracteres.'
+                          ? 'Mínimo 10 caracteres.'
                           : ''
                       }
-                      className="min-h-[110px] bg-white/70 border-slate-200 focus:bg-white rounded-xl p-3 text-xs"
+                      className="min-h-[80px] bg-white/70 border-slate-200 focus:bg-white rounded-xl p-3 text-xs"
                     />
                   </div>
                   
