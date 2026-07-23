@@ -12,6 +12,7 @@ import { notify } from '@/components/notification/adaptive-notify';
 import { useQueryClient } from '@tanstack/react-query';
 import { HardReloadButton } from '@/components/ui/hard-reload-button';
 import { ENV } from '@/config/env';
+import { ImageViewer } from '@/components/ui/image-viewer';
 
 // Traductores lógicos
 const ROL_LABEL = {
@@ -52,7 +53,20 @@ export const ReporteDetalleMobile = () => {
 
   // Modales de revisión
   const [modalRevision, setModalRevision] = useState({ isOpen: false, accion: 'APROBAR' });
+  const [visor, setVisor] = useState({ images: [], index: null });
   const [canceling, setCanceling] = useState(false);
+
+  const resolvedImagesUrls = reporte?.imagenes?.map((img) => {
+    let finalUrl = img.url;
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+      const cleanUrl = img.url.replace(/\\/g, '/');
+      let prefix = ENV.API_URL || '';
+      if (prefix.endsWith('/api')) prefix = prefix.slice(0, -4);
+      const sep = cleanUrl.startsWith('/') ? '' : '/';
+      finalUrl = `${prefix}${sep}${cleanUrl}`;
+    }
+    return finalUrl;
+  }) || [];
 
   const handleBack = () => {
     if (window.history.state && window.history.state.idx > 0) {
@@ -221,22 +235,11 @@ export const ReporteDetalleMobile = () => {
               <div className="border-t border-slate-50 pt-3">
                 <span className="text-[10px] text-slate-400 font-semibold tracking-wide uppercase">Evidencia Fotográfica</span>
                 <div className="flex flex-wrap items-center gap-2 mt-2">
-                  {reporte.imagenes.map((img) => {
-                    let finalUrl = img.url;
-                    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
-                      const cleanUrl = img.url.replace(/\\/g, '/');
-                      let prefix = ENV.API_URL || '';
-                      if (prefix.endsWith('/api')) prefix = prefix.slice(0, -4);
-                      const sep = cleanUrl.startsWith('/') ? '' : '/';
-                      finalUrl = `${prefix}${sep}${cleanUrl}`;
-                    }
-
-                    return (
-                      <a 
-                        key={img.id} 
-                        href={finalUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
+                  {resolvedImagesUrls.map((finalUrl, index) => (
+                      <button 
+                        key={index} 
+                        type="button"
+                        onClick={() => setVisor({ images: resolvedImagesUrls, index })}
                         className="w-16 h-16 rounded-xl border border-slate-200 overflow-hidden cursor-zoom-in hover:border-emerald-400 transition-colors"
                       >
                         <img 
@@ -244,9 +247,8 @@ export const ReporteDetalleMobile = () => {
                           alt="Evidencia" 
                           className="w-full h-full object-cover" 
                         />
-                      </a>
-                    );
-                  })}
+                      </button>
+                  ))}
                 </div>
               </div>
             )}
@@ -352,6 +354,14 @@ export const ReporteDetalleMobile = () => {
         onClose={() => setModalRevision({ isOpen: false, accion: 'APROBAR' })}
         reporteId={id}
         accion={modalRevision.accion}
+      />
+
+      {/* Visor de imágenes (Full Screen) */}
+      <ImageViewer
+        images={visor.images}
+        index={visor.index}
+        onClose={() => setVisor({ images: [], index: null })}
+        onNavigate={(index) => setVisor(prev => ({ ...prev, index }))}
       />
     </div>
   );

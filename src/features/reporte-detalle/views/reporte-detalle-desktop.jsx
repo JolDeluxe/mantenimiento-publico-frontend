@@ -12,6 +12,7 @@ import { notify } from '@/components/notification/adaptive-notify';
 import { useQueryClient } from '@tanstack/react-query';
 import { HardReloadButton } from '@/components/ui/hard-reload-button';
 import { ENV } from '@/config/env';
+import { ImageViewer } from '@/components/ui/image-viewer';
 
 // Traductores lógicos
 const ROL_LABEL = {
@@ -52,7 +53,20 @@ export const ReporteDetalleDesktop = () => {
 
   // Modales de revisión
   const [modalRevision, setModalRevision] = useState({ isOpen: false, accion: 'APROBAR' });
+  const [visor, setVisor] = useState({ images: [], index: null });
   const [canceling, setCanceling] = useState(false);
+
+  const resolvedImagesUrls = reporte?.imagenes?.map((img) => {
+    let finalUrl = img.url;
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+      const cleanUrl = img.url.replace(/\\/g, '/');
+      let prefix = ENV.API_URL || '';
+      if (prefix.endsWith('/api')) prefix = prefix.slice(0, -4);
+      const sep = cleanUrl.startsWith('/') ? '' : '/';
+      finalUrl = `${prefix}${sep}${cleanUrl}`;
+    }
+    return finalUrl;
+  }) || [];
 
   const handleBack = () => {
     if (window.history.state && window.history.state.idx > 0) {
@@ -352,6 +366,14 @@ export const ReporteDetalleDesktop = () => {
         onClose={() => setModalRevision({ isOpen: false, accion: 'APROBAR' })}
         reporteId={id}
         accion={modalRevision.accion}
+      />
+
+      {/* Visor de imágenes (Full Screen) */}
+      <ImageViewer
+        images={visor.images}
+        index={visor.index}
+        onClose={() => setVisor({ images: [], index: null })}
+        onNavigate={(index) => setVisor(prev => ({ ...prev, index }))}
       />
     </div>
   );
