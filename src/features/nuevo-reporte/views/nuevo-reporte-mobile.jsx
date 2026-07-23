@@ -243,7 +243,7 @@ export const NuevoReporteMobile = () => {
 
       if (imagenes && imagenes.length > 0) {
         imagenes.forEach((img) => {
-          formData.append('archivos', img);
+          formData.append('imagenes', img);
         });
       }
 
@@ -555,6 +555,19 @@ export const NuevoReporteMobile = () => {
                       {descripcion}
                     </p>
                   </div>
+
+                  {imagenes && imagenes.length > 0 && (
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-1.5">
+                      <span className="text-[8.5px] font-bold text-slate-400 uppercase tracking-wider">Evidencia Adjunta ({imagenes.length})</span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        {imagenes.map((img, idx) => (
+                          <div key={idx} className="w-10 h-10 rounded-lg bg-white border border-slate-200 overflow-hidden">
+                            <img src={URL.createObjectURL(img)} alt={`evidencia-${idx}`} className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

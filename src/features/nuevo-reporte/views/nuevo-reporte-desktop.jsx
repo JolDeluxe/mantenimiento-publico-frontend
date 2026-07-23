@@ -267,7 +267,7 @@ export const NuevoReporteDesktop = () => {
 
       if (imagenes && imagenes.length > 0) {
         imagenes.forEach((img) => {
-          formData.append('archivos', img);
+          formData.append('imagenes', img);
         });
       }
 
@@ -565,6 +565,19 @@ export const NuevoReporteDesktop = () => {
                         {descripcion}
                       </p>
                     </div>
+
+                    {imagenes && imagenes.length > 0 && (
+                      <div className="flex flex-col gap-1 sm:col-span-2 pt-2 border-t border-slate-200/60">
+                        <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">Evidencia Adjunta ({imagenes.length})</span>
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          {imagenes.map((img, idx) => (
+                            <div key={idx} className="w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden">
+                              <img src={URL.createObjectURL(img)} alt={`evidencia-${idx}`} className="w-full h-full object-cover" />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
