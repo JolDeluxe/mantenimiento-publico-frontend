@@ -13,3 +13,5 @@ export const ReporteDetallePage = () => {
   );
 };
 
+export default ReporteDetallePage;
+
