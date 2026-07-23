@@ -9,7 +9,7 @@ export const useReporteDetalle = (id) => {
     queryKey: ['reporte', id],
     queryFn: async () => {
       const response = await getReporteById(id);
-      return response.data;
+      return response;
     },
     enabled: !!id,
   });
