@@ -11,6 +11,7 @@ import { MaquinaReadonlyCard } from '../components/maquina-readonly-card';
 import { MaquinaVincularCard } from '../components/maquina-vincular-card';
 import { TituloDisplay } from '../components/titulo-display';
 import { ReporteResumenSidebar } from '../components/reporte-resumen-sidebar';
+import { ImageUploader } from '../components/image-uploader';
 import { getMaquinaPrefill } from '@/features/maquinaria/api/maquinaria-api';
 import { createReporte } from '../api/nuevo-reporte-api';
 import { Icon } from '@/components/ui/z_index';
@@ -35,6 +36,7 @@ export const NuevoReporteDesktop = () => {
   const [planta, setPlanta] = useState('KAPPA');
   const [area, setArea] = useState('');
   const [descripcion, setDescripcion] = useState('');
+  const [imagenes, setImagenes] = useState([]);
 
   // Fase dentro del Paso 4 (false = Redactando, true = Revisando Resumen Final)
   const [modoResumenFinal, setModoResumenFinal] = useState(false);
@@ -67,6 +69,7 @@ export const NuevoReporteDesktop = () => {
     setTituloPersonalizado('');
     setArea('');
     setDescripcion('');
+    setImagenes([]);
     setMaquinaData(null);
     setCodigoMaquina('');
     setErrorMaquina('');
@@ -260,6 +263,12 @@ export const NuevoReporteDesktop = () => {
       } else {
         formData.append('planta', planta);
         formData.append('area', area.trim());
+      }
+
+      if (imagenes && imagenes.length > 0) {
+        imagenes.forEach((img) => {
+          formData.append('archivos', img);
+        });
       }
 
       const response = await createReporte(formData);
@@ -471,6 +480,10 @@ export const NuevoReporteDesktop = () => {
                       }
                       className="min-h-[110px] bg-white/70 border-slate-200 focus:bg-white rounded-xl p-3 text-xs"
                     />
+                  </div>
+                  
+                  <div className="px-1">
+                    <ImageUploader imagenes={imagenes} onImagesChange={setImagenes} maxImages={3} />
                   </div>
                 </div>
 

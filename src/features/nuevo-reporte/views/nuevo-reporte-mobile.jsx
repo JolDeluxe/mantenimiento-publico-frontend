@@ -10,6 +10,7 @@ import { TituloDisplay } from '../components/titulo-display';
 import { ParoProduccionPanel } from '../components/paro-produccion-panel';
 import { QrScannerInput } from '../components/qr-scanner-input';
 import { MaquinaReadonlyCard } from '../components/maquina-readonly-card';
+import { ImageUploader } from '../components/image-uploader';
 import { getMaquinaPrefill } from '@/features/maquinaria/api/maquinaria-api';
 import { createReporte } from '../api/nuevo-reporte-api';
 import { Icon } from '@/components/ui/z_index';
@@ -34,6 +35,7 @@ export const NuevoReporteMobile = () => {
   const [planta, setPlanta] = useState('KAPPA');
   const [area, setArea] = useState('');
   const [descripcion, setDescripcion] = useState('');
+  const [imagenes, setImagenes] = useState([]);
 
   // Fase dentro del Paso 4 (false = Redactando, true = Revisando Resumen Final)
   const [modoResumenFinal, setModoResumenFinal] = useState(false);
@@ -66,6 +68,7 @@ export const NuevoReporteMobile = () => {
     setTituloPersonalizado('');
     setArea('');
     setDescripcion('');
+    setImagenes([]);
     setMaquinaData(null);
     setPasoMaquina('SCAN');
     setCodigoManual('');
@@ -236,6 +239,12 @@ export const NuevoReporteMobile = () => {
       } else {
         formData.append('planta', planta);
         formData.append('area', area.trim());
+      }
+
+      if (imagenes && imagenes.length > 0) {
+        imagenes.forEach((img) => {
+          formData.append('archivos', img);
+        });
       }
 
       const response = await createReporte(formData);
@@ -470,6 +479,10 @@ export const NuevoReporteMobile = () => {
                       }
                       className="min-h-28 bg-white/60 border-slate-200 focus:bg-white rounded-xl p-3 text-xs placeholder:text-[10.5px]"
                     />
+                  </div>
+                  
+                  <div className="px-1 mt-1 border-t border-slate-100 pt-3">
+                    <ImageUploader imagenes={imagenes} onImagesChange={setImagenes} maxImages={3} />
                   </div>
                 </div>
               </>
