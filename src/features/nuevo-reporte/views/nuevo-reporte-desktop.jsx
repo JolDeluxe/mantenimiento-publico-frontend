@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CATEGORIAS_REPORTE } from '../constants';
+import { CATEGORIAS_REPORTE, PLANTAS } from '../constants';
 import { StepperHeader } from '../components/stepper-header';
 import { CategoriaSelector } from '../components/categoria-selector';
 import { IncidenteSelector } from '../components/incidente-selector';
@@ -12,7 +12,7 @@ import { MaquinaVincularCard } from '../components/maquina-vincular-card';
 import { TituloDisplay } from '../components/titulo-display';
 import { ReporteResumenSidebar } from '../components/reporte-resumen-sidebar';
 import { getMaquinaPrefill } from '@/features/maquinaria/api/maquinaria-api';
-import { createReporte, getPlantas } from '../api/nuevo-reporte-api';
+import { createReporte } from '../api/nuevo-reporte-api';
 import { Icon } from '@/components/ui/z_index';
 import { Input, Label } from '@/components/form/z_index';
 import { GlassSheen } from '@/components/ui/liquid-glass-mobile';
@@ -40,7 +40,7 @@ export const NuevoReporteDesktop = () => {
   const [modoResumenFinal, setModoResumenFinal] = useState(false);
 
   // Plantas operativas desde backend
-  const [plantas, setPlantas] = useState(['KAPPA']);
+  const plantas = PLANTAS;
 
   // Estados para vinculación de Maquinaria
   const [codigoMaquina, setCodigoMaquina] = useState('');
@@ -58,24 +58,7 @@ export const NuevoReporteDesktop = () => {
   const esMaquina = categoria === 'MAQUINARIA';
   const categoriaSeleccionada = CATEGORIAS_REPORTE.find((c) => c.id === categoria) || CATEGORIAS_REPORTE[0];
 
-  // Cargar plantas operativas desde backend al montar
-  useEffect(() => {
-    getPlantas()
-      .then((res) => {
-        const list = res?.data?.plantas || res?.data || [];
-        if (Array.isArray(list) && list.length > 0) {
-          setPlantas(list);
-          if (list.includes('KAPPA')) {
-            setPlanta('KAPPA');
-          } else {
-            setPlanta(list[0]);
-          }
-        }
-      })
-      .catch((err) => {
-        console.error('[Get Plantas] Error:', err);
-      });
-  }, []);
+  // Ya no se requiere cargar plantas desde backend
 
   // Handlers
   const handleCategoriaChange = (newCat) => {

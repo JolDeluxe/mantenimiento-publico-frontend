@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CATEGORIAS_REPORTE } from '../constants';
+import { CATEGORIAS_REPORTE, PLANTAS } from '../constants';
 import { StepperHeader } from '../components/stepper-header';
 import { CategoriaSelector } from '../components/categoria-selector';
 import { IncidenteSelector } from '../components/incidente-selector';
@@ -11,7 +11,7 @@ import { ParoProduccionPanel } from '../components/paro-produccion-panel';
 import { QrScannerInput } from '../components/qr-scanner-input';
 import { MaquinaReadonlyCard } from '../components/maquina-readonly-card';
 import { getMaquinaPrefill } from '@/features/maquinaria/api/maquinaria-api';
-import { createReporte, getPlantas } from '../api/nuevo-reporte-api';
+import { createReporte } from '../api/nuevo-reporte-api';
 import { Icon } from '@/components/ui/z_index';
 import { Input, Label } from '@/components/form/z_index';
 import { GlassSheen } from '@/components/ui/liquid-glass-mobile';
@@ -38,8 +38,8 @@ export const NuevoReporteMobile = () => {
   // Fase dentro del Paso 4 (false = Redactando, true = Revisando Resumen Final)
   const [modoResumenFinal, setModoResumenFinal] = useState(false);
 
-  // Plantas operativas desde backend
-  const [plantas, setPlantas] = useState(['KAPPA']);
+  // Plantas operativas
+  const plantas = PLANTAS;
 
   // Estados de máquina
   const [pasoMaquina, setPasoMaquina] = useState('SCAN'); // SCAN | MANUAL | VINCULADO
@@ -58,24 +58,7 @@ export const NuevoReporteMobile = () => {
   const esMaquina = categoria === 'MAQUINARIA';
   const categoriaSeleccionada = CATEGORIAS_REPORTE.find((c) => c.id === categoria) || CATEGORIAS_REPORTE[0];
 
-  // Cargar plantas al montar
-  useEffect(() => {
-    getPlantas()
-      .then((res) => {
-        const list = res?.data?.plantas || res?.data || [];
-        if (Array.isArray(list) && list.length > 0) {
-          setPlantas(list);
-          if (list.includes('KAPPA')) {
-            setPlanta('KAPPA');
-          } else {
-            setPlanta(list[0]);
-          }
-        }
-      })
-      .catch((err) => {
-        console.error('[Get Plantas Mobile] Error:', err);
-      });
-  }, []);
+  // Ya no se requiere cargar plantas desde backend
 
   const handleCategoriaChange = (newCat) => {
     setCategoria(newCat);

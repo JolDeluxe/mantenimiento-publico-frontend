@@ -45,6 +45,7 @@ export const AREAS_POR_PLANTA = {
 };
 
 export const LISTA_AREAS_TODAS = [...new Set(Object.values(AREAS_POR_PLANTA).flat())].sort();
+export const PLANTAS = Object.keys(AREAS_POR_PLANTA).filter((p) => p !== 'GENERAL');
 
 export const CATEGORIAS_REPORTE = [
   {
