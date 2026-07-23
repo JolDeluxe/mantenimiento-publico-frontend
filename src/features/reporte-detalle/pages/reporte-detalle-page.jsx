@@ -221,21 +221,29 @@ export const ReporteDetallePage = () => {
               <div className="border-t border-slate-50 pt-3">
                 <span className="text-[10px] text-slate-400 font-semibold tracking-wide uppercase">Evidencia Fotográfica</span>
                 <div className="flex flex-wrap items-center gap-2 mt-2">
-                  {reporte.imagenes.map((img) => (
-                    <a 
-                      key={img.id} 
-                      href={`${ENV.API_URL || ''}${img.url}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="w-16 h-16 rounded-xl border border-slate-200 overflow-hidden cursor-zoom-in hover:border-emerald-400 transition-colors"
-                    >
-                      <img 
-                        src={`${ENV.API_URL || ''}${img.url}`} 
-                        alt="Evidencia" 
-                        className="w-full h-full object-cover" 
-                      />
-                    </a>
-                  ))}
+                  {reporte.imagenes.map((img) => {
+                    const cleanUrl = img.url.replace(/\\/g, '/');
+                    let prefix = ENV.API_URL || '';
+                    if (prefix.endsWith('/api')) prefix = prefix.slice(0, -4);
+                    const sep = cleanUrl.startsWith('/') ? '' : '/';
+                    const finalUrl = `${prefix}${sep}${cleanUrl}`;
+
+                    return (
+                      <a 
+                        key={img.id} 
+                        href={finalUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="w-16 h-16 rounded-xl border border-slate-200 overflow-hidden cursor-zoom-in hover:border-emerald-400 transition-colors"
+                      >
+                        <img 
+                          src={finalUrl} 
+                          alt="Evidencia" 
+                          className="w-full h-full object-cover" 
+                        />
+                      </a>
+                    );
+                  })}
                 </div>
               </div>
             )}
