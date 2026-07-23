@@ -353,5 +353,3 @@ export const ReporteDetalleMobile = () => {
     </div>
   );
 };
-
-export default ReporteDetallePage;

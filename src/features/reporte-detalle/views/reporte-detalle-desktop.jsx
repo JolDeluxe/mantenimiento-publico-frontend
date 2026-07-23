@@ -353,5 +353,3 @@ export const ReporteDetalleDesktop = () => {
     </div>
   );
 };
-
-export default ReporteDetallePage;
