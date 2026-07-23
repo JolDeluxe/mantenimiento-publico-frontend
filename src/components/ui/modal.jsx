@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/utils/cn';
-import { Icon } from './z_index'; // O el nombre correcto de tu barrel index
+import { Icon } from './z_index';
 
 export const Modal = ({
   isOpen,
@@ -34,7 +34,7 @@ export const Modal = ({
     >
       <div
         className={cn(
-          "bg-white rounded-lg shadow-2xl relative flex flex-col max-h-[90vh] w-full max-w-2xl animate-in zoom-in-95 duration-200",
+          "bg-white rounded-2xl shadow-2xl relative flex flex-col max-h-[90vh] w-full max-w-2xl animate-in zoom-in-95 duration-200 overflow-hidden",
           className
         )}
         onClick={(e) => e.stopPropagation()}
@@ -46,31 +46,34 @@ export const Modal = ({
   );
 };
 
-export const ModalHeader = ({ title, onClose, className = "" }) => (
-  <div className={cn("shrink-0 p-6 pb-4 border-b border-slate-100 relative", className)}>
-    <h2 className="text-lg font-bold text-marca-primario text-center uppercase tracking-wider fuente-titulos">
-      {title}
-    </h2>
+export const ModalHeader = ({ title, onClose, className = "", children }) => (
+  <div className={cn("shrink-0 p-5 border-b border-slate-100 relative bg-white", className)}>
+    {children || (
+      <h2 className="text-base font-bold text-slate-800 tracking-wider">
+        {title}
+      </h2>
+    )}
     {onClose && (
       <button
         type="button"
         onClick={onClose}
-        className="absolute top-4 right-4 text-slate-400 hover:text-marca-primario transition-colors cursor-pointer w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100"
+        className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100"
+        aria-label="Cerrar modal"
       >
-        <Icon name="close" size="24px" weight={600} />
+        <Icon name="close" size="20px" />
       </button>
     )}
   </div>
 );
 
 export const ModalBody = ({ children, className = "" }) => (
-  <div className={cn("grow overflow-y-auto p-6 font-lectura", className)}>
+  <div className={cn("grow overflow-y-auto overflow-x-hidden p-5 font-lectura custom-scrollbar", className)}>
     {children}
   </div>
 );
 
 export const ModalFooter = ({ children, className = "" }) => (
-  <div className={cn("shrink-0 flex justify-end gap-3 p-4 px-6 border-t border-slate-100 bg-slate-50 rounded-b-lg", className)}>
+  <div className={cn("shrink-0 flex items-center justify-end gap-3 p-4 px-5 border-t border-slate-100 bg-slate-50/80 rounded-b-2xl", className)}>
     {children}
   </div>
 );

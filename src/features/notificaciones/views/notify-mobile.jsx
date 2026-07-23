@@ -2,8 +2,6 @@ import { GlassFab, Icon, Skeleton, ScrollToTopButton, Spinner } from '@/componen
 import { glassBase, GlassSheen } from '@/components/ui/liquid-glass-mobile';
 import { NotifyItem } from '../components/notify-item';
 import { NotifyEmptyState } from '../components/notify-empty-state';
-import { NotifyOverdueBanner } from '../components/notify-overdue-banner';
-import { hardReload } from '@/utils/hard-reload';
 import { cn } from '@/utils/cn';
 import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
@@ -87,12 +85,11 @@ export const NotifyMobile = ({
     // Al eliminar la paginación inferior, los botones flotantes bajan.
     const baseBottom = 84;
     const fabMarkBottom = `${baseBottom}px`;
-    const fabRefreshBottom = meta.noLeidas > 0 ? `${baseBottom + 60}px` : fabMarkBottom;
 
     return (
         <>
             <div className="flex items-center justify-between mb-3">
-        <HardReloadButton />
+                <HardReloadButton />
                 <GlassToggle
                     soloNoLeidas={soloNoLeidas}
                     onToggle={onToggleNoLeidas}
@@ -104,8 +101,6 @@ export const NotifyMobile = ({
                     </p>
                 )}
             </div>
-
-            <NotifyOverdueBanner currentUser={currentUser} />
 
             <div className="flex flex-col gap-3 px-1 pt-1 pb-32">
                 {loading && notificaciones.length === 0
@@ -138,8 +133,6 @@ export const NotifyMobile = ({
                     </div>
                 )}
             </div>
-
-            
 
             {meta.noLeidas > 0 && (
                 <GlassFab

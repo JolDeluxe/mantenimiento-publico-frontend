@@ -1,18 +1,21 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ReporteCard } from '@/features/reporte-detalle/components/reporte-card';
-import { Icon } from '@/components/ui/z_index';
-import { cn } from '@/utils/cn';
+import { ReporteCard } from '@/features/common/components/reporte-card';
+import { Icon, Button } from '@/components/ui/z_index';
 import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 /**
  * Vista de escritorio para el historial de reportes.
  */
-export const HistoricoDesktop = ({ reportes, isLoading, isError, refetch }) => {
+export const HistoricoDesktop = ({ reportes = [], isLoading, isError, refetch, onSelectReporte }) => {
   const navigate = useNavigate();
 
   const handleCardClick = (id) => {
-    navigate(`/reportes/${id}`);
+    if (onSelectReporte) {
+      onSelectReporte(id);
+    } else {
+      navigate(`/reportes/${id}`);
+    }
   };
 
   return (
@@ -60,6 +63,9 @@ export const HistoricoDesktop = ({ reportes, isLoading, isError, refetch }) => {
             <h4 className="text-sm font-bold text-slate-800">Error al cargar historial</h4>
             <p className="text-xs text-slate-500 mt-1">Intenta refrescar la página de nuevo.</p>
           </div>
+          <Button onClick={refetch} variant="secundario" className="text-xs px-4 py-2 mt-2">
+            Reintentar
+          </Button>
         </div>
       )}
 

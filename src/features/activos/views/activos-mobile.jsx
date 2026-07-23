@@ -1,15 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ReporteCard } from '@/features/reporte-detalle/components/reporte-card';
+import { ReporteCard } from '@/features/common/components/reporte-card';
 import { GlassFab, Icon } from '@/components/ui/z_index';
-import { cn } from '@/utils/cn';
 import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 /**
  * Vista móvil para reportes activos.
  * Optimizada para dispositivos portátiles con FAB flotante de creación.
  */
-export const ActivosMobile = ({ reportes = [], isLoading, isError, refetch }) => {
+export const ActivosMobile = ({ reportes = [], isLoading, isError, refetch, onSelectReporte }) => {
   const navigate = useNavigate();
 
   const handleCreateClick = () => {
@@ -17,7 +16,11 @@ export const ActivosMobile = ({ reportes = [], isLoading, isError, refetch }) =>
   };
 
   const handleCardClick = (id) => {
-    navigate(`/reportes/${id}`);
+    if (onSelectReporte) {
+      onSelectReporte(id);
+    } else {
+      navigate(`/reportes/${id}`);
+    }
   };
 
   return (

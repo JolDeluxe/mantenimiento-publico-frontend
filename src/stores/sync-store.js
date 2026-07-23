@@ -5,7 +5,7 @@ import {
     createTicket,
     updateTicket,
     changeTicketStatus,
-} from '@/features/tickets/api/tickets-api';
+} from '@/features/common/api/reporte-api';
 
 export const useSyncStore = create((set) => ({
     lastUpdate: Date.now(),

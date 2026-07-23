@@ -1,18 +1,21 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ReporteCard } from '@/features/reporte-detalle/components/reporte-card';
+import { ReporteCard } from '@/features/common/components/reporte-card';
 import { Icon } from '@/components/ui/z_index';
-import { cn } from '@/utils/cn';
 import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 /**
  * Vista móvil para historial de reportes.
  */
-export const HistoricoMobile = ({ reportes, isLoading, isError, refetch }) => {
+export const HistoricoMobile = ({ reportes = [], isLoading, isError, refetch, onSelectReporte }) => {
   const navigate = useNavigate();
 
   const handleCardClick = (id) => {
-    navigate(`/reportes/${id}`);
+    if (onSelectReporte) {
+      onSelectReporte(id);
+    } else {
+      navigate(`/reportes/${id}`);
+    }
   };
 
   return (

@@ -1,6 +1,20 @@
 import { useQuery } from '@tanstack/react-query';
 import { getReportesActivos } from '../api/activos-api';
 
+const getSortDate = (reporte) => {
+  const value = reporte?.updatedAt || reporte?.createdAt;
+  const time = value ? new Date(value).getTime() : 0;
+  return Number.isNaN(time) ? 0 : time;
+};
+
+const ordenarParaCliente = (reportes = []) =>
+  [...reportes].sort((a, b) => {
+    const aResuelto = a.estado === 'RESUELTO';
+    const bResuelto = b.estado === 'RESUELTO';
+    if (aResuelto !== bResuelto) return aResuelto ? -1 : 1;
+    return getSortDate(b) - getSortDate(a);
+  });
+
 /**
  * Hook de React Query para reportes activos del cliente.
  */
@@ -21,7 +35,7 @@ export const useActivos = (params = {}) => {
   );
 
   return {
-    data: activos,
+    data: ordenarParaCliente(activos),
     isLoading,
     isError,
     refetch,

@@ -1,15 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ReporteCard } from '@/features/reporte-detalle/components/reporte-card';
+import { ReporteCard } from '@/features/common/components/reporte-card';
 import { Icon, Button } from '@/components/ui/z_index';
-import { cn } from '@/utils/cn';
 import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 /**
  * Vista de escritorio para el listado de reportes activos.
  * Organiza las tarjetas en una cuadrícula responsiva (Grid).
  */
-export const ActivosDesktop = ({ reportes = [], isLoading, isError, refetch }) => {
+export const ActivosDesktop = ({ reportes = [], isLoading, isError, refetch, onSelectReporte }) => {
   const navigate = useNavigate();
 
   const handleCreateClick = () => {
@@ -17,7 +16,11 @@ export const ActivosDesktop = ({ reportes = [], isLoading, isError, refetch }) =
   };
 
   const handleCardClick = (id) => {
-    navigate(`/reportes/${id}`);
+    if (onSelectReporte) {
+      onSelectReporte(id);
+    } else {
+      navigate(`/reportes/${id}`);
+    }
   };
 
   return (
@@ -37,7 +40,7 @@ export const ActivosDesktop = ({ reportes = [], isLoading, isError, refetch }) =
 
         <div className="flex items-center gap-3">
           {/* Botón Refrescar Moderno (Hard Reload) */}
-        <HardReloadButton />
+          <HardReloadButton />
 
           {/* Botón Nuevo Reporte */}
           <Button

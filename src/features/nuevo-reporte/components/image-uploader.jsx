@@ -1,19 +1,24 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Icon } from '@/components/ui/z_index';
 
 export const ImageUploader = ({ imagenes = [], onImagesChange, maxImages = 3 }) => {
   const fileInputRef = useRef(null);
+  const [error, setError] = useState('');
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     if (imagenes.length + files.length > maxImages) {
-      alert(`Solo puedes subir un máximo de ${maxImages} imágenes en total.`);
+      setError(`Solo puedes subir un máximo de ${maxImages} imágenes en total.`);
+      e.target.value = '';
       return;
     }
+    setError('');
     onImagesChange([...imagenes, ...files]);
+    e.target.value = '';
   };
 
   const handleRemoveImage = (indexToRemove) => {
+    setError('');
     onImagesChange(imagenes.filter((_, idx) => idx !== indexToRemove));
   };
 
@@ -66,6 +71,11 @@ export const ImageUploader = ({ imagenes = [], onImagesChange, maxImages = 3 }) 
         multiple
         onChange={handleFileChange}
       />
+      {error && (
+        <p className="text-xs font-semibold text-red-600">
+          {error}
+        </p>
+      )}
     </div>
   );
 };

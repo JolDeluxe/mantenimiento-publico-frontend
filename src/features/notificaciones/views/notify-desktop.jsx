@@ -1,8 +1,7 @@
-import { Card, CardBody, Button, Icon, Skeleton } from '@/components/ui/z_index';
+import { Card, CardBody, Button, Skeleton } from '@/components/ui/z_index';
 import { NotifyItem } from '../components/notify-item';
 import { NotifyEmptyState } from '../components/notify-empty-state';
 import { NotifyFilterBar } from '../components/notify-filter-bar';
-import { NotifyOverdueBanner } from '../components/notify-overdue-banner';
 
 export const NotifyDesktop = ({
     notificaciones,
@@ -23,8 +22,6 @@ export const NotifyDesktop = ({
 }) => {
     return (
         <div className="max-w-full mx-auto w-full space-y-4">
-            <NotifyOverdueBanner currentUser={currentUser} />
-
             <NotifyFilterBar
                 soloNoLeidas={soloNoLeidas}
                 filtroTipo={filtroTipo}
