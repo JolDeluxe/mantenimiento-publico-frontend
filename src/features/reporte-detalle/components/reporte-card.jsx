@@ -4,17 +4,6 @@ import { ReporteStatusBadge } from './reporte-status-badge';
 import { formatRelativo } from '@/lib/date';
 import { cn } from '@/utils/cn';
 
-// Categorías del sistema para mapeo de iconos
-const CATEGORIAS_MAP = {
-  MAQUINARIA: { nombre: 'Maquinaria', icon: 'precision_manufacturing' },
-  INFRAESTRUCTURA: { nombre: 'Infraestructura', icon: 'domain' },
-  MOBILIARIO: { nombre: 'Mobiliario', icon: 'chair' },
-  SEGURIDAD: { nombre: 'Seguridad', icon: 'shield' },
-  LIMPIEZA: { nombre: 'Limpieza', icon: 'cleaning_services' },
-  SISTEMAS: { nombre: 'Sistemas', icon: 'computer' },
-  OTRO: { nombre: 'Otro', icon: 'more_horiz' },
-};
-
 /**
  * Tarjeta Liquid Glass para la bandeja de reportes de cliente.
  * Destaca visualmente reportes resueltos listos para revisión.

@@ -317,7 +317,7 @@ export const NuevoReporteDesktop = () => {
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2 shrink-0">
               Paso 1: Selecciona la Categoría Principal
             </h3>
-            <div className="flex-1 flex flex-col justify-center overflow-hidden">
+            <div className="flex-1 h-full overflow-y-auto max-h-[420px] p-2 -m-2 flex flex-col justify-center overflow-x-hidden">
               <CategoriaSelector value={categoria} onChange={handleCategoriaChange} />
             </div>
             <div className="flex justify-end pt-2 border-t border-slate-100 shrink-0">
@@ -338,7 +338,7 @@ export const NuevoReporteDesktop = () => {
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2 shrink-0">
               Paso 2: Tipo de Incidencia ({categoriaSeleccionada.nombre})
             </h3>
-            <div className="flex-1 overflow-y-auto max-h-[360px] pr-1">
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden pr-1">
               <IncidenteSelector
                 incidentes={categoriaSeleccionada.incidentes}
                 incidenteSeleccionadoId={incidente?.id}

@@ -15,11 +15,11 @@ const CategoriaCard = ({ categoria, isSelected, onClick }) => {
       onClick={onClick}
       aria-pressed={isSelected}
       className={cn(
-        "group relative h-[135px] sm:h-[140px] w-full overflow-hidden rounded-2xl transition-all duration-200 text-left cursor-pointer outline-none select-none flex flex-col justify-between p-3.5",
+        "group relative w-full h-full min-h-[130px] overflow-hidden rounded-2xl transition-all duration-200 text-left cursor-pointer outline-none select-none flex flex-col justify-between p-3.5",
         "focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-1",
         isSelected
           ? "border-2 border-emerald-500 ring-2 ring-emerald-500/30 shadow-md scale-[1.01]"
-          : "border border-white/50 hover:border-slate-300 hover:shadow-xs opacity-90 hover:opacity-100"
+          : "border-2 border-white/50 hover:border-slate-300 hover:shadow-xs opacity-90 hover:opacity-100"
       )}
     >
       {/* Fallback de imagen con fondo oscuro e icono de respaldo */}
@@ -86,13 +86,13 @@ const CategoriaCard = ({ categoria, isSelected, onClick }) => {
  */
 export const CategoriaSelector = ({ value, onChange }) => {
   return (
-    <div className="flex flex-col gap-2 w-full">
-      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide px-0.5">
+    <div className="flex flex-col gap-2 w-full h-full">
+      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide px-0.5 shrink-0">
         Selecciona la categoría *
       </span>
 
-      {/* Cuadrícula de tarjetas alargadas (2 en 2 en móvil) */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full">
+      {/* Cuadrícula de tarjetas alargadas (2 en 2 en móvil, 3 en 3 en desktop) */}
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full h-full auto-rows-fr">
         {CATEGORIAS_REPORTE.map((cat) => {
           const isSelected = value === cat.id;
 
