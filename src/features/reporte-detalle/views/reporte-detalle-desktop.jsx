@@ -222,11 +222,14 @@ export const ReporteDetalleDesktop = () => {
                 <span className="text-[10px] text-slate-400 font-semibold tracking-wide uppercase">Evidencia Fotográfica</span>
                 <div className="flex flex-wrap items-center gap-2 mt-2">
                   {reporte.imagenes.map((img) => {
-                    const cleanUrl = img.url.replace(/\\/g, '/');
-                    let prefix = ENV.API_URL || '';
-                    if (prefix.endsWith('/api')) prefix = prefix.slice(0, -4);
-                    const sep = cleanUrl.startsWith('/') ? '' : '/';
-                    const finalUrl = `${prefix}${sep}${cleanUrl}`;
+                    let finalUrl = img.url;
+                    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+                      const cleanUrl = img.url.replace(/\\/g, '/');
+                      let prefix = ENV.API_URL || '';
+                      if (prefix.endsWith('/api')) prefix = prefix.slice(0, -4);
+                      const sep = cleanUrl.startsWith('/') ? '' : '/';
+                      finalUrl = `${prefix}${sep}${cleanUrl}`;
+                    }
 
                     return (
                       <a 
