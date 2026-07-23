@@ -11,6 +11,7 @@ import { changeReporteStatus } from '../api/reporte-detalle-api';
 import { notify } from '@/components/notification/adaptive-notify';
 import { useQueryClient } from '@tanstack/react-query';
 import { HardReloadButton } from '@/components/ui/hard-reload-button';
+import { ENV } from '@/config/env';
 
 // Traductores lógicos
 const ROL_LABEL = {
@@ -215,6 +216,29 @@ export const ReporteDetallePage = () => {
                 {descripcion || 'Sin descripción detallada.'}
               </p>
             </div>
+
+            {reporte.imagenes && reporte.imagenes.length > 0 && (
+              <div className="border-t border-slate-50 pt-3">
+                <span className="text-[10px] text-slate-400 font-semibold tracking-wide uppercase">Evidencia Fotográfica</span>
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  {reporte.imagenes.map((img) => (
+                    <a 
+                      key={img.id} 
+                      href={`${ENV.API_URL || ''}${img.url}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-16 h-16 rounded-xl border border-slate-200 overflow-hidden cursor-zoom-in hover:border-emerald-400 transition-colors"
+                    >
+                      <img 
+                        src={`${ENV.API_URL || ''}${img.url}`} 
+                        alt="Evidencia" 
+                        className="w-full h-full object-cover" 
+                      />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
