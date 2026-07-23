@@ -4,6 +4,19 @@ import { ReporteStatusBadge } from './reporte-status-badge';
 import { formatRelativo } from '@/lib/date';
 import { cn } from '@/utils/cn';
 
+const CATEGORIAS_MAP = {
+  MAQUINARIA: { nombre: 'Maquinaria', icon: 'precision_manufacturing' },
+  INFRAESTRUCTURA: { nombre: 'Infraestructura', icon: 'domain' },
+  MOBILIARIO: { nombre: 'Mobiliario', icon: 'chair' },
+  ELECTRICO: { nombre: 'Eléctrico e Iluminación', icon: 'electric_bolt' },
+  CLIMATIZACION: { nombre: 'Climas y Ventilación', icon: 'hvac' },
+  PLOMERIA: { nombre: 'Plomería y Sanitarios', icon: 'water_drop' },
+  SEGURIDAD: { nombre: 'Seguridad', icon: 'shield' },
+  LIMPIEZA: { nombre: 'Limpieza', icon: 'cleaning_services' },
+  SISTEMAS: { nombre: 'Sistemas', icon: 'computer' },
+  OTRO: { nombre: 'Otro', icon: 'more_horiz' },
+};
+
 /**
  * Tarjeta Liquid Glass para la bandeja de reportes de cliente.
  * Destaca visualmente reportes resueltos listos para revisión.
