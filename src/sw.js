@@ -1,9 +1,11 @@
 import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
-import { NetworkFirst, CacheFirst } from 'workbox-strategies';
+import { NetworkFirst, CacheFirst, NetworkOnly } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { clientsClaim } from 'workbox-core';
+
+/* global clients */
 
 // Toma control inmediato de todos los clientes abiertos
 clientsClaim();
@@ -24,6 +26,14 @@ registerRoute(
     new NavigationRoute(createHandlerBoundToURL('/index.html'), {
         denylist: [/^\/api\//],
     })
+);
+
+// ── Prefill QR de maquinaria → siempre red, nunca Cache Storage ───────────────
+registerRoute(
+    ({ url, request }) =>
+        request.method === 'GET' &&
+        /^\/api\/maquinas\/codigo\/[^/]+\/prefill\/?$/.test(url.pathname),
+    new NetworkOnly()
 );
 
 // ── API → NetworkFirst ────────────────────────────────────────────────────────

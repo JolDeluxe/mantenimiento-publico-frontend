@@ -14,7 +14,7 @@ function getPrefillError(error, codigoPrefill, prefillParam) {
   const status = error.response?.status;
   if (status === 403) return 'No tienes permiso para consultar la máquina indicada en el QR.';
   if (status === 404) return 'La máquina indicada en el QR no fue encontrada.';
-  if (!error.response) return 'No se pudo conectar con el servidor. Revisa tu conexión e intenta de nuevo.';
+  if (!error.response) return 'No pudimos verificar la información actual de la máquina. Revisa tu conexión e inténtalo nuevamente.';
 
   return error.response?.data?.error ||
     error.response?.data?.message ||
@@ -42,12 +42,21 @@ export function usePrefillQr() {
     },
     enabled: Boolean(codigoPrefill),
     retry: false,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+    refetchOnReconnect: 'always',
+    refetchOnWindowFocus: 'always',
   });
 
+  const prefillData =
+    !query.isFetching && query.isSuccess && query.data?.maquinaId
+      ? query.data
+      : null;
+
   return {
-    prefillData: query.data?.maquinaId ? query.data : null,
-    prefillError: getPrefillError(query.error, codigoPrefill, prefillParam),
+    prefillData,
+    prefillError: query.isFetching ? '' : getPrefillError(query.error, codigoPrefill, prefillParam),
     prefillLoading: query.isFetching,
     onPrefillRetry: query.refetch,
     hasPrefill: Boolean(prefillParam),

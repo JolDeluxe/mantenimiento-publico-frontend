@@ -70,6 +70,7 @@ export const NuevoReporteMobile = ({
   const esMaquina = categoria === 'MAQUINARIA';
   const categoriaSeleccionada = CATEGORIAS_REPORTE.find((c) => c.id === categoria) || null;
   const appliedPrefillRef = useRef(null);
+  const maquinaRequestSeqRef = useRef(0);
   const isQrFlow = Boolean(hasPrefill && maquinaData && appliedPrefillRef.current === codigoPrefill);
 
   // Ya no se requiere cargar plantas desde backend
@@ -124,17 +125,34 @@ export const NuevoReporteMobile = ({
           setMaquinaData(null);
           setCodigoManual('');
           setPasoMaquina('SCAN');
+          setErrorMaquina('');
           setStep(1);
         }
         appliedPrefillRef.current = null;
         return;
       }
+
+      if (prefillLoading || prefillError) {
+        setCategoria('');
+        setIncidente(null);
+        setMaquinaData(null);
+        setCodigoManual('');
+        setPasoMaquina('SCAN');
+        setErrorMaquina('');
+        setStep(1);
+        setModoResumenFinal(false);
+        setSubmitted(false);
+        appliedPrefillRef.current = null;
+        return;
+      }
+
       if (appliedPrefillRef.current && appliedPrefillRef.current !== codigoPrefill) {
         setCategoria('');
         setIncidente(null);
         setMaquinaData(null);
         setCodigoManual('');
         setPasoMaquina('SCAN');
+        setErrorMaquina('');
         setStep(1);
         appliedPrefillRef.current = null;
       }
@@ -154,7 +172,7 @@ export const NuevoReporteMobile = ({
     return () => {
       active = false;
     };
-  }, [codigoPrefill, hasPrefill, prefillData]);
+  }, [codigoPrefill, hasPrefill, prefillData, prefillError, prefillLoading]);
 
   const handleVincularCodigo = async (rawText) => {
     setErrorMaquina('');
@@ -166,9 +184,13 @@ export const NuevoReporteMobile = ({
     }
 
     setLoadingPrefill(true);
+    setMaquinaData(null);
+    const requestSeq = maquinaRequestSeqRef.current + 1;
+    maquinaRequestSeqRef.current = requestSeq;
 
     try {
       const response = await getMaquinaPrefill(codigo);
+      if (requestSeq !== maquinaRequestSeqRef.current) return;
       const resData = response?.data?.data || response?.data || response;
 
       if (resData && resData.maquinaId) {
@@ -179,6 +201,7 @@ export const NuevoReporteMobile = ({
         throw new Error('Formato de respuesta incorrecto');
       }
     } catch (err) {
+      if (requestSeq !== maquinaRequestSeqRef.current) return;
       const backendError =
         err.response?.data?.errors?.[0]?.message ||
         err.response?.data?.error ||
@@ -197,7 +220,9 @@ export const NuevoReporteMobile = ({
         setErrorMaquina('La máquina ingresada no fue encontrada.');
       }
     } finally {
-      setLoadingPrefill(false);
+      if (requestSeq === maquinaRequestSeqRef.current) {
+        setLoadingPrefill(false);
+      }
     }
   };
 
