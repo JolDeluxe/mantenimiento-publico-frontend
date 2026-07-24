@@ -9,8 +9,8 @@ export const getMaquinas = (params = {}) =>
 /**
  * Obtener detalles de pre-llenado de una máquina a partir de su código QR
  */
-export const getMaquinaPrefill = (codigo) =>
-  api.get(`/api/maquinas/codigo/${codigo}/prefill`);
+export const getMaquinaPrefill = (codigo, config = {}) =>
+  api.get(`/api/maquinas/codigo/${codigo}/prefill`, config);
 
 /**
  * Obtener la ficha detallada de una máquina por ID

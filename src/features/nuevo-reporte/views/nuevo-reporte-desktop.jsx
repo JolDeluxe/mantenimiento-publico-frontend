@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CATEGORIAS_REPORTE, PLANTAS } from '../constants';
 import { StepperHeader } from '../components/stepper-header';
@@ -24,7 +24,14 @@ import { notify } from '@/components/notification/adaptive-notify';
  * Vista de Escritorio para Creación de Reportes con 4 Pasos Completos.
  * Paso 4 implementa flujo de 2 fases: Redacción de Descripción -> Resumen Completo Pre-Envío -> Enviar.
  */
-export const NuevoReporteDesktop = () => {
+export const NuevoReporteDesktop = ({
+  prefillData = null,
+  prefillError = '',
+  prefillLoading = false,
+  onPrefillRetry,
+  hasPrefill = false,
+  codigoPrefill = null,
+}) => {
   const navigate = useNavigate();
 
   // Paso actual (1, 2, 3, 4)
@@ -60,6 +67,8 @@ export const NuevoReporteDesktop = () => {
 
   const esMaquina = categoria === 'MAQUINARIA';
   const categoriaSeleccionada = CATEGORIAS_REPORTE.find((c) => c.id === categoria) || null;
+  const appliedPrefillRef = useRef(null);
+  const isQrFlow = Boolean(hasPrefill && maquinaData && appliedPrefillRef.current === codigoPrefill);
 
   // Ya no se requiere cargar plantas desde backend
 
@@ -79,6 +88,7 @@ export const NuevoReporteDesktop = () => {
     setImpactoTemporal('');
     setModoResumenFinal(false);
     setSubmitted(false);
+    appliedPrefillRef.current = null;
   };
 
   const handleIncidenteSelect = (inc) => {
@@ -95,7 +105,50 @@ export const NuevoReporteDesktop = () => {
     setParoProduccion(false);
     setFechaParoProduccion('');
     setImpactoTemporal('');
+    appliedPrefillRef.current = null;
   };
+
+  useEffect(() => {
+    let active = true;
+
+    queueMicrotask(() => {
+      if (!active) return;
+
+      if (!codigoPrefill) {
+        if (hasPrefill && appliedPrefillRef.current) {
+          setCategoria('');
+          setIncidente(null);
+          setMaquinaData(null);
+          setCodigoMaquina('');
+          setStep(1);
+        }
+        appliedPrefillRef.current = null;
+        return;
+      }
+      if (appliedPrefillRef.current && appliedPrefillRef.current !== codigoPrefill) {
+        setCategoria('');
+        setIncidente(null);
+        setMaquinaData(null);
+        setCodigoMaquina('');
+        setStep(1);
+        appliedPrefillRef.current = null;
+      }
+      if (!prefillData || appliedPrefillRef.current === codigoPrefill) return;
+
+      setCategoria('MAQUINARIA');
+      setMaquinaData(prefillData);
+      setCodigoMaquina(prefillData.codigo || codigoPrefill);
+      setErrorMaquina('');
+      setStep(2);
+      setModoResumenFinal(false);
+      setSubmitted(false);
+      appliedPrefillRef.current = codigoPrefill;
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [codigoPrefill, hasPrefill, prefillData]);
 
   const handleBuscarMaquina = async (e) => {
     if (e) e.preventDefault();
@@ -165,6 +218,10 @@ export const NuevoReporteDesktop = () => {
     }
     if (step === 2 && !isStep2Valid) {
       notify.error('Selecciona un tipo de incidencia para continuar.');
+      return;
+    }
+    if (step === 2 && isQrFlow) {
+      setStep(4);
       return;
     }
     if (step === 3 && !isStep3Valid) {
@@ -328,6 +385,16 @@ export const NuevoReporteDesktop = () => {
             <div className="flex-1 h-full overflow-y-auto max-h-[420px] p-2 -m-2 flex flex-col justify-center overflow-x-hidden">
               <CategoriaSelector value={categoria} onChange={handleCategoriaChange} />
             </div>
+            {hasPrefill && (prefillLoading || prefillError) && (
+              <div className="text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 p-3 text-slate-600">
+                {prefillLoading ? 'Cargando máquina del QR...' : prefillError}
+                {prefillError && codigoPrefill && (
+                  <button type="button" onClick={onPrefillRetry} className="ml-2 text-emerald-700 underline">
+                    Reintentar
+                  </button>
+                )}
+              </div>
+            )}
             <div className="flex justify-end pt-2 border-t border-slate-100 shrink-0">
               <button
                 type="button"
@@ -373,7 +440,7 @@ export const NuevoReporteDesktop = () => {
                 onClick={handleNextStep}
                 className="h-10 px-5 text-xs font-bold uppercase tracking-wider rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
               >
-                Continuar a {esMaquina ? 'Vinculación de Equipo' : 'Planta y Área'} →
+                Continuar a {isQrFlow ? 'Descripción' : esMaquina ? 'Vinculación de Equipo' : 'Planta y Área'} →
               </button>
             </div>
           </div>
@@ -468,6 +535,11 @@ export const NuevoReporteDesktop = () => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto max-h-[500px] pr-1 flex flex-col gap-2">
+                  {isQrFlow && (
+                    <div className="p-2 rounded-2xl bg-emerald-50/70 border border-emerald-200">
+                      <MaquinaReadonlyCard maquinaData={maquinaData} />
+                    </div>
+                  )}
                   <div className="p-3 rounded-2xl bg-white border border-slate-200 shadow-2xs">
                     <TituloDisplay
                       incidente={incidente}

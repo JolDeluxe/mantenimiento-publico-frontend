@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CATEGORIAS_REPORTE, PLANTAS } from '../constants';
 import { StepperHeader } from '../components/stepper-header';
@@ -14,6 +14,7 @@ import { MaquinaReadonlyCard } from '../components/maquina-readonly-card';
 import { ImageUploader } from '../components/image-uploader';
 import { getMaquinaPrefill } from '@/features/maquinaria/api/maquinaria-api';
 import { createReporte } from '../api/nuevo-reporte-api';
+import { extractMachineCode } from '../utils/qr-parser';
 import { Icon } from '@/components/ui/z_index';
 import { Input, Label } from '@/components/form/z_index';
 import { GlassSheen } from '@/components/ui/liquid-glass-mobile';
@@ -24,7 +25,14 @@ import { HardReloadButton } from '@/components/ui/hard-reload-button';
  * Vista Unificada Móvil para Creación de Reportes con 4 Pasos Completos.
  * Paso 4 implementa flujo de 2 fases: Redacción de Descripción -> Resumen Completo Pre-Envío -> Enviar.
  */
-export const NuevoReporteMobile = () => {
+export const NuevoReporteMobile = ({
+  prefillData = null,
+  prefillError = '',
+  prefillLoading = false,
+  onPrefillRetry,
+  hasPrefill = false,
+  codigoPrefill = null,
+}) => {
   const navigate = useNavigate();
 
   // Paso del wizard (1, 2, 3, 4)
@@ -61,6 +69,8 @@ export const NuevoReporteMobile = () => {
 
   const esMaquina = categoria === 'MAQUINARIA';
   const categoriaSeleccionada = CATEGORIAS_REPORTE.find((c) => c.id === categoria) || null;
+  const appliedPrefillRef = useRef(null);
+  const isQrFlow = Boolean(hasPrefill && maquinaData && appliedPrefillRef.current === codigoPrefill);
 
   // Ya no se requiere cargar plantas desde backend
 
@@ -80,6 +90,7 @@ export const NuevoReporteMobile = () => {
     setImpactoTemporal('');
     setModoResumenFinal(false);
     setSubmitted(false);
+    appliedPrefillRef.current = null;
   };
 
   const handleIncidenteSelect = (inc) => {
@@ -97,19 +108,67 @@ export const NuevoReporteMobile = () => {
     setParoProduccion(false);
     setFechaParoProduccion('');
     setImpactoTemporal('');
+    appliedPrefillRef.current = null;
   };
 
-  const handleVincularCodigo = async (codigo) => {
+  useEffect(() => {
+    let active = true;
+
+    queueMicrotask(() => {
+      if (!active) return;
+
+      if (!codigoPrefill) {
+        if (hasPrefill && appliedPrefillRef.current) {
+          setCategoria('');
+          setIncidente(null);
+          setMaquinaData(null);
+          setCodigoManual('');
+          setPasoMaquina('SCAN');
+          setStep(1);
+        }
+        appliedPrefillRef.current = null;
+        return;
+      }
+      if (appliedPrefillRef.current && appliedPrefillRef.current !== codigoPrefill) {
+        setCategoria('');
+        setIncidente(null);
+        setMaquinaData(null);
+        setCodigoManual('');
+        setPasoMaquina('SCAN');
+        setStep(1);
+        appliedPrefillRef.current = null;
+      }
+      if (!prefillData || appliedPrefillRef.current === codigoPrefill) return;
+
+      setCategoria('MAQUINARIA');
+      setMaquinaData(prefillData);
+      setCodigoManual(prefillData.codigo || codigoPrefill);
+      setErrorMaquina('');
+      setPasoMaquina('VINCULADO');
+      setStep(2);
+      setModoResumenFinal(false);
+      setSubmitted(false);
+      appliedPrefillRef.current = codigoPrefill;
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [codigoPrefill, hasPrefill, prefillData]);
+
+  const handleVincularCodigo = async (rawText) => {
     setErrorMaquina('');
-    if (!codigo.trim()) {
-      setErrorMaquina('Ingresa un código de máquina válido.');
+
+    const codigo = extractMachineCode(rawText);
+    if (!codigo) {
+      setErrorMaquina('Código no reconocido. Verifica el QR o ingresa el código manualmente.');
       return;
     }
 
     setLoadingPrefill(true);
 
     try {
-      const response = await getMaquinaPrefill(codigo.trim().toUpperCase());
+      const response = await getMaquinaPrefill(codigo);
       const resData = response?.data?.data || response?.data || response;
 
       if (resData && resData.maquinaId) {
@@ -169,6 +228,10 @@ export const NuevoReporteMobile = () => {
     }
     if (step === 2 && !isStep2Valid) {
       notify.error('Selecciona un tipo de incidencia para continuar.');
+      return;
+    }
+    if (step === 2 && isQrFlow) {
+      setStep(4);
       return;
     }
     if (step === 3 && !isStep3Valid) {
@@ -305,6 +368,16 @@ export const NuevoReporteMobile = () => {
         {step === 1 && (
           <div className="w-full">
             <CategoriaSelector value={categoria} onChange={handleCategoriaChange} />
+            {hasPrefill && (prefillLoading || prefillError) && (
+              <div className="mt-3 text-xs font-bold rounded-xl border border-slate-200 bg-white/85 p-3 text-slate-600">
+                {prefillLoading ? 'Cargando máquina del QR...' : prefillError}
+                {prefillError && codigoPrefill && (
+                  <button type="button" onClick={onPrefillRetry} className="ml-2 text-emerald-700 underline">
+                    Reintentar
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -455,6 +528,11 @@ export const NuevoReporteMobile = () => {
             {!modoResumenFinal ? (
               /* FASE 1: Redacción de Descripción y Título */
               <>
+                {isQrFlow && (
+                  <div className="bg-emerald-50/70 border border-emerald-200 p-2 rounded-2xl">
+                    <MaquinaReadonlyCard maquinaData={maquinaData} />
+                  </div>
+                )}
                 <div className="bg-white/85 backdrop-blur-xl border border-white/45 p-3 rounded-2xl shadow-xs">
                   <TituloDisplay
                     incidente={incidente}
@@ -631,7 +709,7 @@ export const NuevoReporteMobile = () => {
               className="relative overflow-hidden flex-1 h-10 text-[10px] font-extrabold uppercase tracking-wider rounded-2xl bg-emerald-600/90 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white backdrop-blur-xl border border-white/40 shadow-[0_10px_30px_rgba(16,185,129,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] transition-all cursor-pointer flex items-center justify-center gap-1 min-w-0"
             >
               <GlassSheen />
-              <span className="relative z-10 truncate">Continuar a {esMaquina ? 'Equipo' : 'Ubicación'}</span>
+              <span className="relative z-10 truncate">Continuar a {isQrFlow ? 'Detalles' : esMaquina ? 'Equipo' : 'Ubicación'}</span>
               <Icon name="arrow_forward" size="14px" className="relative z-10 shrink-0" />
             </button>
           </div>

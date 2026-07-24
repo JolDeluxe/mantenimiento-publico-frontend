@@ -1,24 +1,23 @@
-import { useEffect, useState } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth-store';
 
 const ROLES_EQUIPO = ['TECNICO', 'COORDINADOR_MTTO', 'JEFE_MTTO', 'SUPER_ADMIN'];
 
 export const ProtectedRoute = () => {
+  const location = useLocation();
   const { isAuthenticated, user: userState, token, refreshToken } = useAuthStore();
   const user = userState?.data ?? userState;
   const userRol = user?.rol;
-  const [loopDetected, setLoopDetected] = useState(false);
+  let urlDestino = import.meta.env.VITE_URL_SISTEMA_INTERNO || 'http://localhost:5000';
+  if (urlDestino.endsWith('/')) urlDestino = urlDestino.slice(0, -1);
+  const loopDetected = urlDestino === window.location.origin
+    ? `VITE_URL_SISTEMA_INTERNO es idéntica al origen (${urlDestino}). Revisa tu archivo .env.`
+    : '';
 
   useEffect(() => {
     if (isAuthenticated && ROLES_EQUIPO.includes(userRol)) {
-      let urlDestino = import.meta.env.VITE_URL_SISTEMA_INTERNO || 'http://localhost:5000';
-      if (urlDestino.endsWith('/')) urlDestino = urlDestino.slice(0, -1);
-
-      if (urlDestino === window.location.origin) {
-        setLoopDetected(`VITE_URL_SISTEMA_INTERNO es idéntica al origen (${urlDestino}). Revisa tu archivo .env.`);
-        return;
-      }
+      if (loopDetected) return;
 
       const payload = encodeURIComponent(JSON.stringify({ user: userState, token, refreshToken }));
 
@@ -27,13 +26,15 @@ export const ProtectedRoute = () => {
 
       window.location.replace(`${urlDestino}/sso-receiver#payload=${payload}`);
     }
-  }, [isAuthenticated, userRol, token, refreshToken]);
+  }, [isAuthenticated, userRol, userState, token, refreshToken, loopDetected, urlDestino]);
 
   if (loopDetected) {
     return <div className="p-10 text-red-600 font-mono font-bold text-center">🛑 BUCLE INFINITO PREVENIDO: {loopDetected}</div>;
   }
 
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
 
   if (ROLES_EQUIPO.includes(userRol)) {
       return (
