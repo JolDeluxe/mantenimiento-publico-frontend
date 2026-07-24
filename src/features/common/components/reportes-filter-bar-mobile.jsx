@@ -103,6 +103,11 @@ export const ReportesFilterBarMobile = ({
     acc[r.estado] = (acc[r.estado] || 0) + 1;
     return acc;
   }, {});
+  const sortOptions = [
+    { value: 'RECIENTES', label: 'Recientes', icon: 'schedule' },
+    { value: 'ANTIGUOS', label: 'Antiguos', icon: 'history' },
+    { value: 'PRIORIDAD', label: 'Prioridad', icon: 'priority_high' },
+  ];
 
   const renderFilterItem = (est, label, count, iconName) => {
     const isSelected = selectedEstado === est;
@@ -154,7 +159,7 @@ export const ReportesFilterBarMobile = ({
     }),
   ];
 
-  return (
+return (
     <div className="w-full flex flex-col gap-3 mb-5 shrink-0 bg-white/50 backdrop-blur-md border border-white/30 p-2.5 rounded-xl shadow-2xs">
       {/* Cabecera */}
       <div className="flex items-center justify-between px-0.5 border-b border-slate-200/40 pb-2">
@@ -164,6 +169,7 @@ export const ReportesFilterBarMobile = ({
         <div className="flex items-center gap-2">
           {selectedEstado !== 'TODOS' && (
             <button
+              type="button"
               onClick={() => onChangeEstado('TODOS')}
               className="text-[8.5px] font-extrabold text-emerald-600 uppercase tracking-wider hover:underline flex items-center gap-0.5 cursor-pointer bg-transparent border-none outline-none"
             >
@@ -172,17 +178,29 @@ export const ReportesFilterBarMobile = ({
             </button>
           )}
           {onChangeSort && (
-            <div className="flex items-center gap-1 bg-slate-100/60 border border-slate-250/50 rounded px-1.5 py-0.5 shadow-3xs">
-              <Icon name="sort" size="9.5px" className="text-slate-500" />
+            <div className="relative h-5 w-[85px] shrink-0 rounded-md border border-slate-250/60 bg-white shadow-3xs flex items-center">
+              <Icon
+                name="sort"
+                size="8px"
+                className="pointer-events-none absolute left-1.5 text-slate-500"
+              />
               <select
                 value={sortBy}
                 onChange={(e) => onChangeSort(e.target.value)}
-                className="bg-transparent text-[10px] font-bold text-slate-700 outline-none cursor-pointer border-none p-0 pr-0.5"
+                aria-label="Ordenar reportes"
+                className="w-full h-full appearance-none bg-transparent pl-4 pr-4 text-[9px] font-semibold text-slate-700 outline-none cursor-pointer border-none m-0 leading-none"
               >
-                <option value="RECIENTES">Recientes</option>
-                <option value="ANTIGUOS">Antiguos</option>
-                <option value="PRIORIDAD">Prioridad</option>
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
+              <Icon
+                name="expand_more"
+                size="10px"
+                className="pointer-events-none absolute right-1 text-slate-500"
+              />
             </div>
           )}
           {/* Botón de Colapsar/Expandir */}
@@ -215,50 +233,57 @@ export const ReportesFilterBarMobile = ({
           )}
         </div>
       ) : (
-        /* Círculos compactos distribuidos equitativamente, con el TODOS como un óvalo horizontal "TOTAL X" */
-        <div className="flex items-center justify-between w-full py-1 px-1">
+        /* CORRECCIÓN 2: Se agregó items-start para dar espacio al texto inferior */
+        <div className="flex items-start justify-between w-full py-1 px-1 mt-1">
           {totalItems.map((item) => {
             const isSelected = selectedEstado === item.id;
             const style = statusCardStyles[item.id] || statusCardStyles.TODOS;
 
             if (item.id === 'TODOS') {
-              // Botón con estilo ovalado (TOTAL X)
               return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => onChangeEstado(item.id)}
-                  className={cn(
-                    'h-6.5 px-2.5 rounded-full flex items-center justify-center text-[8.5px] font-black text-white transition-all duration-200 active:scale-90 border shadow-3xs shrink-0 cursor-pointer',
-                    style.bgCircle,
-                    isSelected 
-                      ? 'ring-2 ring-slate-800/40 ring-offset-1 scale-105 border-white z-10' 
-                      : 'opacity-60 scale-95 border-transparent hover:opacity-100'
-                  )}
-                  title={item.label}
-                >
-                  TOTAL {item.count}
-                </button>
+                <div key={item.id} className="flex flex-col items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => onChangeEstado(item.id)}
+                    className={cn(
+                      'h-6.5 px-2.5 rounded-full flex items-center justify-center text-[8.5px] font-black text-white transition-all duration-200 active:scale-90 border shadow-3xs shrink-0 cursor-pointer',
+                      style.bgCircle,
+                    isSelected
+                      ? 'ring-2 ring-slate-800/40 ring-offset-1 scale-105 border-white z-10'
+                        : 'opacity-60 scale-95 border-transparent hover:opacity-100'
+                    )}
+                    title={item.label}
+                  >
+                    TOTAL {item.count}
+                  </button>
+                  {/* Etiqueta invisible solo para mantener la alineación vertical con los demás */}
+                  <span className="text-[7.5px] opacity-0 pointer-events-none">X</span>
+                </div>
               );
             }
 
-            // Resto de los estados como círculos
+            // CORRECCIÓN 2: Se envuelve el botón en un div para poder colocar el texto abajo
             return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onChangeEstado(item.id)}
-                className={cn(
-                  'w-6.5 h-6.5 rounded-full flex items-center justify-center text-[9.5px] font-black text-white transition-all duration-200 active:scale-90 border shadow-3xs shrink-0 cursor-pointer',
-                  style.bgCircle,
-                  isSelected 
-                    ? 'ring-2 ring-slate-800/40 ring-offset-1 scale-110 border-white z-10' 
-                    : 'opacity-60 scale-90 border-transparent hover:opacity-100'
-                )}
-                title={item.label}
-              >
-                {item.count}
-              </button>
+              <div key={item.id} className="flex flex-col items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => onChangeEstado(item.id)}
+                  className={cn(
+                    'w-6.5 h-6.5 rounded-full flex items-center justify-center text-[9.5px] font-black text-white transition-all duration-200 active:scale-90 border shadow-3xs shrink-0 cursor-pointer',
+                    style.bgCircle,
+                  isSelected
+                    ? 'ring-2 ring-slate-800/40 ring-offset-1 scale-110 border-white z-10'
+                      : 'opacity-60 scale-90 border-transparent hover:opacity-100'
+                  )}
+                  title={item.label}
+                >
+                  {item.count}
+                </button>
+                {/* Nueva etiqueta de texto para identificar el círculo */}
+                <span className="text-[7.5px] font-bold text-slate-400 uppercase tracking-tighter w-10 text-center truncate">
+                  {item.label}
+                </span>
+              </div>
             );
           })}
         </div>
