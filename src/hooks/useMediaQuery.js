@@ -1,22 +1,21 @@
 import { useState, useEffect } from 'react';
 
 export function useMediaQuery(query) {
-  const [matches, setMatches] = useState(false);
+  // Inicializamos directamente con el valor actual del media query para evitar parpadeos
+  const [matches, setMatches] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia(query).matches;
+    }
+    return false;
+  });
 
   useEffect(() => {
     const media = window.matchMedia(query);
-    
-    // Sincronización inicial
-    if (media.matches !== matches) {
-      setMatches(media.matches);
-    }
-
-    // Listener reactivo a cambios de resolución
     const listener = () => setMatches(media.matches);
     media.addEventListener('change', listener);
     
     return () => media.removeEventListener('change', listener);
-  }, [matches, query]);
+  }, [query]);
 
   return matches;
 }

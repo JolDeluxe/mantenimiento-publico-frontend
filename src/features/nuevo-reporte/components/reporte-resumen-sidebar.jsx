@@ -49,17 +49,23 @@ export const ReporteResumenSidebar = ({
         {/* 1. Categoría */}
         <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 text-xs">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="p-1.5 rounded-lg bg-slate-900 text-white shrink-0">
-              <Icon name={categoriaSeleccionada.icon} size="14px" />
+            <div className={`p-1.5 rounded-lg shrink-0 ${categoriaSeleccionada ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-400'}`}>
+              <Icon name={categoriaSeleccionada?.icon || 'help_outline'} size="14px" />
             </div>
             <div className="flex flex-col min-w-0">
               <span className="text-[8.5px] font-bold text-slate-400 uppercase tracking-wider">Categoría</span>
-              <span className="font-extrabold text-slate-800 truncate text-xs">
-                {categoriaSeleccionada.nombre}
+              <span className={`font-extrabold truncate text-xs ${categoriaSeleccionada ? 'text-slate-800' : 'text-slate-400 italic'}`}>
+                {categoriaSeleccionada ? categoriaSeleccionada.nombre : 'Por seleccionar...'}
               </span>
             </div>
           </div>
-          <Icon name="check_circle" size="16px" className="text-emerald-600 shrink-0" />
+          {categoriaSeleccionada ? (
+            <Icon name="check_circle" size="16px" className="text-emerald-600 shrink-0" />
+          ) : (
+            <span className="text-[8.5px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200">
+              Pendiente
+            </span>
+          )}
         </div>
 
         {/* 2. Incidencia */}

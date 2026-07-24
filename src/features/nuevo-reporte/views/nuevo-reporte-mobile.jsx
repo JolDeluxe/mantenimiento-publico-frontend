@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CATEGORIAS_REPORTE, PLANTAS } from '../constants';
 import { StepperHeader } from '../components/stepper-header';
+import { cn } from '@/utils/cn';
 import { CategoriaSelector } from '../components/categoria-selector';
 import { IncidenteSelector } from '../components/incidente-selector';
 import { PlantaSelector } from '../components/planta-selector';
@@ -17,6 +18,7 @@ import { Icon } from '@/components/ui/z_index';
 import { Input, Label } from '@/components/form/z_index';
 import { GlassSheen } from '@/components/ui/liquid-glass-mobile';
 import { notify } from '@/components/notification/adaptive-notify';
+import { HardReloadButton } from '@/components/ui/hard-reload-button';
 
 /**
  * Vista Unificada Móvil para Creación de Reportes con 4 Pasos Completos.
@@ -29,7 +31,7 @@ export const NuevoReporteMobile = () => {
   const [step, setStep] = useState(1);
 
   // Estados de categoría e incidente
-  const [categoria, setCategoria] = useState('MAQUINARIA');
+  const [categoria, setCategoria] = useState('');
   const [incidente, setIncidente] = useState(null);
   const [tituloPersonalizado, setTituloPersonalizado] = useState('');
   const [planta, setPlanta] = useState('KAPPA');
@@ -58,7 +60,7 @@ export const NuevoReporteMobile = () => {
   const [submitted, setSubmitted] = useState(false);
 
   const esMaquina = categoria === 'MAQUINARIA';
-  const categoriaSeleccionada = CATEGORIAS_REPORTE.find((c) => c.id === categoria) || CATEGORIAS_REPORTE[0];
+  const categoriaSeleccionada = CATEGORIAS_REPORTE.find((c) => c.id === categoria) || null;
 
   // Ya no se requiere cargar plantas desde backend
 
@@ -261,8 +263,24 @@ export const NuevoReporteMobile = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col overflow-hidden relative">
+    <div className="w-full h-full flex flex-col overflow-hidden relative bg-slate-50/50">
       
+      {/* Header móvil de sección */}
+      <header className="shrink-0 w-full z-30 bg-white/70 backdrop-blur-md border-b border-white/20 px-4 py-3 flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.01)]">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-marca-primario flex items-center justify-center shadow-md animate-pulse">
+            <Icon name="post_add" className="text-white text-lg" />
+          </div>
+          <div>
+            <h1 className="text-sm font-bold text-slate-800">Nuevo Reporte</h1>
+            <p className="text-[10px] font-semibold text-marca-primario uppercase tracking-wider leading-none mt-0.5">
+              Nueva Solicitud
+            </p>
+          </div>
+        </div>
+        <HardReloadButton />
+      </header>
+
       {/* 1. INDICADOR DE PASOS MÓVIL (Fijo Arriba) */}
       <div className="shrink-0 p-3 pb-1.5 z-30">
         <StepperHeader
@@ -294,7 +312,7 @@ export const NuevoReporteMobile = () => {
         {step === 2 && (
           <div className="bg-white/85 backdrop-blur-xl border border-white/45 p-3.5 rounded-2xl shadow-xs flex flex-col gap-3 w-full">
             <IncidenteSelector
-              incidentes={categoriaSeleccionada.incidentes}
+              incidentes={categoriaSeleccionada?.incidentes || []}
               incidenteSeleccionadoId={incidente?.id}
               onSelectIncidente={handleIncidenteSelect}
             />
@@ -504,11 +522,11 @@ export const NuevoReporteMobile = () => {
                 <div className="flex flex-col gap-2.5 text-xs">
                   <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 flex items-center gap-2.5">
                     <div className="p-1 rounded-lg bg-slate-900 text-white shrink-0">
-                      <Icon name={categoriaSeleccionada.icon} size="14px" />
+                      <Icon name={categoriaSeleccionada?.icon || 'help_outline'} size="14px" />
                     </div>
                     <div className="flex flex-col min-w-0">
                       <span className="text-[8.5px] font-bold text-slate-400 uppercase tracking-wider">Categoría</span>
-                      <span className="font-extrabold text-slate-800 truncate">{categoriaSeleccionada.nombre}</span>
+                      <span className="font-extrabold text-slate-800 truncate">{categoriaSeleccionada?.nombre || ''}</span>
                     </div>
                   </div>
 
@@ -581,8 +599,14 @@ export const NuevoReporteMobile = () => {
         {step === 1 && (
           <button
             type="button"
+            disabled={!isStep1Valid}
             onClick={handleNextStep}
-            className="relative overflow-hidden w-full h-11 text-[10.5px] font-extrabold uppercase tracking-wider rounded-2xl bg-emerald-600/90 hover:bg-emerald-600 active:bg-emerald-700 text-white backdrop-blur-xl border border-white/40 shadow-[0_10px_30px_rgba(16,185,129,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] transition-all cursor-pointer flex items-center justify-center gap-1.5"
+            className={cn(
+              "relative overflow-hidden w-full h-11 text-[10.5px] font-extrabold uppercase tracking-wider rounded-2xl backdrop-blur-xl border transition-all flex items-center justify-center gap-1.5",
+              isStep1Valid
+                ? "bg-emerald-600/90 hover:bg-emerald-600 active:bg-emerald-700 text-white border-white/40 shadow-[0_10px_30px_rgba(16,185,129,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] cursor-pointer"
+                : "bg-slate-100/50 text-slate-400 border-slate-250 cursor-not-allowed opacity-50"
+            )}
           >
             <GlassSheen />
             <span className="relative z-10 truncate">Continuar a Incidencia</span>

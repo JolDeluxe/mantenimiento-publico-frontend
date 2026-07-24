@@ -33,8 +33,8 @@ export const WelcomeMobile = () => {
           </div>
           <div>
             <h1 className="text-sm font-bold text-slate-800">Inicio</h1>
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider leading-none mt-0.5">
-              Portal del Cliente
+            <p className="text-[10px] font-semibold text-marca-primario uppercase tracking-wider leading-none mt-0.5">
+              Menú Principal
             </p>
           </div>
         </div>

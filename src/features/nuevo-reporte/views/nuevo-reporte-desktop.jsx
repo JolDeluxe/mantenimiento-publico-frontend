@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CATEGORIAS_REPORTE, PLANTAS } from '../constants';
 import { StepperHeader } from '../components/stepper-header';
+import { cn } from '@/utils/cn';
 import { CategoriaSelector } from '../components/categoria-selector';
 import { IncidenteSelector } from '../components/incidente-selector';
 import { PlantaSelector } from '../components/planta-selector';
@@ -30,7 +31,7 @@ export const NuevoReporteDesktop = () => {
   const [step, setStep] = useState(1);
 
   // Estados de categoría e incidente
-  const [categoria, setCategoria] = useState('MAQUINARIA');
+  const [categoria, setCategoria] = useState('');
   const [incidente, setIncidente] = useState(null);
   const [tituloPersonalizado, setTituloPersonalizado] = useState('');
   const [planta, setPlanta] = useState('KAPPA');
@@ -58,7 +59,7 @@ export const NuevoReporteDesktop = () => {
   const [submitted, setSubmitted] = useState(false);
 
   const esMaquina = categoria === 'MAQUINARIA';
-  const categoriaSeleccionada = CATEGORIAS_REPORTE.find((c) => c.id === categoria) || CATEGORIAS_REPORTE[0];
+  const categoriaSeleccionada = CATEGORIAS_REPORTE.find((c) => c.id === categoria) || null;
 
   // Ya no se requiere cargar plantas desde backend
 
@@ -290,6 +291,21 @@ export const NuevoReporteDesktop = () => {
       {/* Columna Izquierda (7 Cols): Selección Paso a Paso */}
       <div className="lg:col-span-7 flex flex-col justify-between gap-3 h-full overflow-hidden">
         
+        {/* Encabezado de Sección */}
+        <div className="shrink-0 flex items-center justify-between border-b border-slate-200/80 pb-3 mb-1">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-marca-primario/10 text-marca-primario flex items-center justify-center border border-marca-primario/10 shadow-xs shrink-0">
+              <Icon name="post_add" size="22px" />
+            </div>
+            <div>
+              <h1 className="text-lg font-black text-slate-800 tracking-tight">Nuevo Reporte</h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Registra una nueva incidencia o solicitud de mantenimiento paso a paso.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Stepper Header Superior (shrink-0) */}
         <div className="shrink-0">
           <StepperHeader
@@ -315,8 +331,14 @@ export const NuevoReporteDesktop = () => {
             <div className="flex justify-end pt-2 border-t border-slate-100 shrink-0">
               <button
                 type="button"
+                disabled={!isStep1Valid}
                 onClick={handleNextStep}
-                className="h-10 px-5 text-xs font-bold uppercase tracking-wider rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+                className={cn(
+                  "h-10 px-5 text-xs font-bold uppercase tracking-wider rounded-xl transition-all",
+                  isStep1Valid
+                    ? "bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-md shadow-emerald-600/20 cursor-pointer"
+                    : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
+                )}
               >
                 Continuar a Tipo de Incidencia →
               </button>
@@ -328,11 +350,11 @@ export const NuevoReporteDesktop = () => {
         {step === 2 && (
           <div className="w-full bg-white/85 backdrop-blur-xl border border-white/50 p-4 rounded-2xl shadow-xs flex flex-col justify-between flex-1 overflow-hidden gap-3">
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2 shrink-0">
-              Paso 2: Tipo de Incidencia ({categoriaSeleccionada.nombre})
+              Paso 2: Tipo de Incidencia ({categoriaSeleccionada?.nombre || ''})
             </h3>
             <div className="flex-1 flex flex-col min-h-0 overflow-hidden pr-1">
               <IncidenteSelector
-                incidentes={categoriaSeleccionada.incidentes}
+                incidentes={categoriaSeleccionada?.incidentes || []}
                 incidenteSeleccionadoId={incidente?.id}
                 onSelectIncidente={handleIncidenteSelect}
               />
@@ -526,8 +548,8 @@ export const NuevoReporteDesktop = () => {
                     <div className="flex flex-col gap-1">
                       <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">Categoría</span>
                       <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
-                        <Icon name={categoriaSeleccionada.icon} size="16px" className="text-emerald-600" />
-                        <span>{categoriaSeleccionada.nombre}</span>
+                        <Icon name={categoriaSeleccionada?.icon || 'help_outline'} size="16px" className="text-emerald-600" />
+                        <span>{categoriaSeleccionada?.nombre || ''}</span>
                       </div>
                     </div>
 

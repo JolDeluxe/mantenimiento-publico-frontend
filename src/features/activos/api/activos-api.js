@@ -6,7 +6,7 @@ import axios from '@/lib/axios';
 export const getReportesActivos = (params = {}) => {
   return axios.get('/api/tickets', {
     params: {
-      limit: 100,
+      limit: 1000,
       ...params,
     },
   });
