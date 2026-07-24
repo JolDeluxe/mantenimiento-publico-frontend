@@ -10,8 +10,8 @@ import { cn } from '@/utils/cn';
 export const StepperHeader = ({ currentStep, onStepClick, stepValidations, esMaquina }) => {
   const steps = [
     { number: 1, label: 'Categoría', icon: 'category' },
-    { number: 2, label: 'Tipo de Incidencia', icon: 'grid_view' },
-    { number: 3, label: esMaquina ? 'Equipo' : 'Ubicación', icon: esMaquina ? 'precision_manufacturing' : 'location_on' },
+    { number: 2, label: esMaquina ? 'Equipo' : 'Tipo de Incidencia', icon: esMaquina ? 'precision_manufacturing' : 'grid_view' },
+    { number: 3, label: esMaquina ? 'Tipo de Incidencia' : 'Ubicación', icon: esMaquina ? 'grid_view' : 'location_on' },
     { number: 4, label: 'Detalles', icon: 'send' },
   ];
 

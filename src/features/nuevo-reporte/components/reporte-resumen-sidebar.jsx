@@ -19,6 +19,44 @@ export const ReporteResumenSidebar = ({
   const tieneUbicacionValida = esMaquina
     ? Boolean(maquinaData && (!paroProduccion || fechaParoProduccion))
     : Boolean(planta && area.trim());
+  const steps = [
+    {
+      number: 1,
+      label: 'Categoría',
+      icon: categoriaSeleccionada?.icon || 'category',
+      done: Boolean(categoriaSeleccionada),
+      value: categoriaSeleccionada?.nombre || 'Por seleccionar...',
+    },
+    {
+      number: 2,
+      label: esMaquina ? 'Equipo' : 'Incidencia',
+      icon: esMaquina ? 'precision_manufacturing' : incidente?.icon || 'grid_view',
+      done: esMaquina ? tieneUbicacionValida : Boolean(incidente),
+      value: esMaquina
+        ? maquinaData
+          ? `${maquinaData.nombre} [${maquinaData.codigo}]`
+          : 'Sin vincular equipo...'
+        : incidente?.nombre || 'Por seleccionar...',
+    },
+    {
+      number: 3,
+      label: esMaquina ? 'Incidencia' : 'Ubicación',
+      icon: esMaquina ? incidente?.icon || 'grid_view' : 'location_on',
+      done: esMaquina ? Boolean(incidente) : tieneUbicacionValida,
+      value: esMaquina
+        ? incidente?.nombre || 'Por seleccionar...'
+        : area
+          ? `Planta ${planta} - ${area}`
+          : 'Sin definir...',
+    },
+    {
+      number: 4,
+      label: 'Detalles',
+      icon: 'edit_note',
+      done: currentStep >= 4,
+      value: currentStep >= 4 ? 'Redactando descripción' : 'Pendiente',
+    },
+  ];
 
   return (
     <div className="bg-white/85 backdrop-blur-xl border border-white/50 p-4 rounded-2xl shadow-xs flex flex-col justify-between gap-3 h-full overflow-hidden">
@@ -43,102 +81,70 @@ export const ReporteResumenSidebar = ({
         </span>
       </div>
 
-      {/* Resumen Acumulado Espacioso */}
-      <div className="flex flex-col gap-2.5 flex-1 overflow-y-auto pr-0.5">
-        
-        {/* 1. Categoría */}
-        <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 text-xs">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className={`p-1.5 rounded-lg shrink-0 ${categoriaSeleccionada ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-400'}`}>
-              <Icon name={categoriaSeleccionada?.icon || 'help_outline'} size="14px" />
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-[8.5px] font-bold text-slate-400 uppercase tracking-wider">Categoría</span>
-              <span className={`font-extrabold truncate text-xs ${categoriaSeleccionada ? 'text-slate-800' : 'text-slate-400 italic'}`}>
-                {categoriaSeleccionada ? categoriaSeleccionada.nombre : 'Por seleccionar...'}
-              </span>
-            </div>
-          </div>
-          {categoriaSeleccionada ? (
-            <Icon name="check_circle" size="16px" className="text-emerald-600 shrink-0" />
-          ) : (
-            <span className="text-[8.5px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200">
-              Pendiente
-            </span>
-          )}
-        </div>
+      {/* Ruta acumulada conectada */}
+      <div className="flex-1 overflow-y-auto pr-0.5 py-1">
+        <div className="relative flex flex-col gap-3">
+          <div className="absolute left-[18px] top-5 bottom-5 w-px bg-emerald-100" />
+          {steps.map((item, index) => {
+            const isActive = currentStep === item.number;
+            const isPast = currentStep > item.number;
+            const isReady = item.done || isPast;
+            return (
+              <div key={item.number} className="relative flex gap-3">
+                <div
+                  className={`relative z-10 w-9 h-9 rounded-xl flex items-center justify-center border shadow-xs shrink-0 transition-all ${
+                    isReady
+                      ? 'bg-emerald-600 text-white border-emerald-600'
+                      : isActive
+                        ? 'bg-slate-900 text-white border-slate-900'
+                        : 'bg-white text-slate-400 border-slate-200'
+                  }`}
+                >
+                  <Icon name={isReady && !isActive ? 'check' : item.icon} size="16px" />
+                </div>
 
-        {/* 2. Incidencia */}
-        <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 text-xs">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className={`p-1.5 rounded-lg shrink-0 ${incidente ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-400'}`}>
-              <Icon name={incidente?.icon || 'help_outline'} size="14px" />
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-[8.5px] font-bold text-slate-400 uppercase tracking-wider">Tipo de Incidencia</span>
-              <span className={`font-extrabold truncate text-xs ${incidente ? 'text-slate-800' : 'text-slate-400 italic'}`}>
-                {incidente ? incidente.nombre : 'Por seleccionar...'}
-              </span>
-            </div>
-          </div>
-          {incidente ? (
-            <Icon name="check_circle" size="16px" className="text-emerald-600 shrink-0" />
-          ) : (
-            <span className="text-[8.5px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200">
-              Pendiente
-            </span>
-          )}
-        </div>
-
-        {/* 3. Ubicación o Equipo */}
-        <div className="flex flex-col gap-1 p-2.5 rounded-xl bg-slate-50 border border-slate-200/60 text-xs">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className={`p-1.5 rounded-lg shrink-0 ${tieneUbicacionValida ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'}`}>
-                <Icon name={esMaquina ? 'precision_manufacturing' : 'location_on'} size="14px" />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[8.5px] font-bold text-slate-400 uppercase tracking-wider">
-                  {esMaquina ? 'Equipo Asignado' : 'Ubicación'}
-                </span>
-                {esMaquina ? (
-                  maquinaData ? (
-                    <span className="font-extrabold text-slate-800 truncate text-xs">
-                      {maquinaData.nombre} [{maquinaData.codigo}]
+                <div
+                  className={`min-w-0 flex-1 rounded-xl border p-3 transition-all ${
+                    isActive
+                      ? 'bg-emerald-50/70 border-emerald-200 shadow-xs'
+                      : isReady
+                        ? 'bg-white border-emerald-100'
+                        : 'bg-slate-50/80 border-slate-200/70'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={`text-[8.5px] font-black uppercase tracking-wider ${isActive ? 'text-emerald-700' : 'text-slate-400'}`}>
+                      Paso {item.number}
                     </span>
-                  ) : (
-                    <span className="font-extrabold text-slate-400 italic text-xs">
-                      Sin vincular equipo...
+                    <span className={`text-[8.5px] font-black px-1.5 py-0.5 rounded-md border ${
+                      isReady
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : 'bg-amber-50 text-amber-600 border-amber-200'
+                    }`}>
+                      {isReady ? 'Listo' : 'Pendiente'}
                     </span>
-                  )
-                ) : (
-                  <span className={`font-extrabold truncate text-xs ${area ? 'text-slate-800' : 'text-slate-400 italic'}`}>
-                    {area ? `Planta ${planta} — ${area}` : 'Sin definir...'}
-                  </span>
-                )}
+                  </div>
+                  <div className="mt-1 flex flex-col min-w-0">
+                    <span className="text-xs font-black text-slate-800 truncate">
+                      {item.label}
+                    </span>
+                    <span className={`text-[11px] font-semibold truncate ${item.done ? 'text-slate-600' : 'text-slate-400 italic'}`}>
+                      {item.value}
+                    </span>
+                  </div>
+                  {index === 1 && esMaquina && maquinaData && paroProduccion && (
+                    <div className="mt-2 flex items-center justify-between gap-2 text-[9.5px] font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-1 rounded-lg">
+                      <span>Paro de Producción</span>
+                      <span className="font-mono text-[9px]">
+                        {fechaParoProduccion ? new Date(fechaParoProduccion).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Hora requerida'}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-            {tieneUbicacionValida ? (
-              <Icon name="check_circle" size="16px" className="text-emerald-600 shrink-0" />
-            ) : (
-              <span className="text-[8.5px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-200">
-                Pendiente
-              </span>
-            )}
-          </div>
-
-          {esMaquina && maquinaData && paroProduccion && (
-            <div className="mt-1.5 pt-1.5 border-t border-slate-200/60 flex items-center justify-between text-[9.5px]">
-              <span className="font-extrabold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded-md">
-                Paro de Producción
-              </span>
-              <span className="text-slate-500 font-mono text-[9px]">
-                {fechaParoProduccion ? new Date(fechaParoProduccion).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Hora requerida'}
-              </span>
-            </div>
-          )}
+            );
+          })}
         </div>
-
       </div>
 
       {/* Pie Informativo de ayuda */}

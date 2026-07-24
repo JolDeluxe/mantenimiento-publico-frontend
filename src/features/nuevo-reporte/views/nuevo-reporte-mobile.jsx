@@ -203,16 +203,17 @@ export const NuevoReporteMobile = ({
 
   // Validaciones por paso
   const isStep1Valid = Boolean(categoria);
-  const isStep2Valid = Boolean(incidente);
-  const isStep3Valid = esMaquina
-    ? Boolean(maquinaData && (!paroProduccion || fechaParoProduccion))
-    : Boolean(planta && area.trim());
+  const isIncidenteValid = Boolean(incidente);
+  const isMaquinaValid = Boolean(maquinaData && (!paroProduccion || fechaParoProduccion));
+  const isUbicacionValid = Boolean(planta && area.trim());
+  const isStep2Valid = esMaquina ? isMaquinaValid : isIncidenteValid;
+  const isStep3Valid = esMaquina ? isIncidenteValid : isUbicacionValid;
   const isStep4Valid = Boolean(
     descripcion &&
       descripcion.trim().length >= 10 &&
       (!incidente?.permiteTituloPersonalizado || (tituloPersonalizado && tituloPersonalizado.trim().length >= 10))
   );
-  const isScanStep = step === 3 && esMaquina && pasoMaquina === 'SCAN';
+  const isScanStep = step === 2 && esMaquina && pasoMaquina === 'SCAN';
 
   const stepValidations = {
     1: isStep1Valid,
@@ -227,14 +228,6 @@ export const NuevoReporteMobile = ({
       return;
     }
     if (step === 2 && !isStep2Valid) {
-      notify.error('Selecciona un tipo de incidencia para continuar.');
-      return;
-    }
-    if (step === 2 && isQrFlow) {
-      setStep(4);
-      return;
-    }
-    if (step === 3 && !isStep3Valid) {
       if (esMaquina) {
         if (!maquinaData) {
           setErrorMaquina('Debes vincular una máquina válida para continuar.');
@@ -242,6 +235,14 @@ export const NuevoReporteMobile = ({
         } else if (paroProduccion && !fechaParoProduccion) {
           notify.error('Debe seleccionar la fecha y hora del paro.');
         }
+      } else {
+        notify.error('Selecciona un tipo de incidencia para continuar.');
+      }
+      return;
+    }
+    if (step === 3 && !isStep3Valid) {
+      if (esMaquina) {
+        notify.error('Selecciona un tipo de incidencia para continuar.');
       } else {
         if (!planta) notify.error('Selecciona una planta.');
         else if (!area.trim()) notify.error('Indica el área u ubicación.');
@@ -381,19 +382,8 @@ export const NuevoReporteMobile = ({
           </div>
         )}
 
-        {/* PASO 2: Tipo de Incidencia */}
+        {/* PASO 2: Tipo de Incidencia o Vinculación de Maquinaria */}
         {step === 2 && (
-          <div className="bg-white/85 backdrop-blur-xl border border-white/45 p-3.5 rounded-2xl shadow-xs flex flex-col gap-3 w-full">
-            <IncidenteSelector
-              incidentes={categoriaSeleccionada?.incidentes || []}
-              incidenteSeleccionadoId={incidente?.id}
-              onSelectIncidente={handleIncidenteSelect}
-            />
-          </div>
-        )}
-
-        {/* PASO 3: Vinculación o Ubicación */}
-        {step === 3 && (
           <div className={isScanStep ? 'h-full min-h-0 w-full flex flex-col' : 'min-h-0 w-full'}>
             {esMaquina ? (
               <>
@@ -500,6 +490,29 @@ export const NuevoReporteMobile = ({
                   </div>
                 )}
               </>
+            ) : (
+              <div className="bg-white/85 backdrop-blur-xl border border-white/45 p-3.5 rounded-2xl shadow-xs flex flex-col gap-3 w-full">
+                <IncidenteSelector
+                  incidentes={categoriaSeleccionada?.incidentes || []}
+                  incidenteSeleccionadoId={incidente?.id}
+                  onSelectIncidente={handleIncidenteSelect}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* PASO 3: Incidencia de Maquinaria o Ubicación */}
+        {step === 3 && (
+          <div className="min-h-0 w-full">
+            {esMaquina ? (
+              <div className="bg-white/85 backdrop-blur-xl border border-white/45 p-3.5 rounded-2xl shadow-xs flex flex-col gap-3 w-full">
+                <IncidenteSelector
+                  incidentes={categoriaSeleccionada?.incidentes || []}
+                  incidenteSeleccionadoId={incidente?.id}
+                  onSelectIncidente={handleIncidenteSelect}
+                />
+              </div>
             ) : (
               <div className="bg-white/85 backdrop-blur-xl border border-white/45 p-4 rounded-2xl shadow-xs flex flex-col gap-3.5">
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2">
@@ -687,7 +700,7 @@ export const NuevoReporteMobile = ({
             )}
           >
             <GlassSheen />
-            <span className="relative z-10 truncate">Continuar a Incidencia</span>
+            <span className="relative z-10 truncate">Continuar a {esMaquina ? 'Equipo' : 'Incidencia'}</span>
             <Icon name="arrow_forward" size="14px" className="relative z-10 shrink-0" />
           </button>
         )}
@@ -709,7 +722,7 @@ export const NuevoReporteMobile = ({
               className="relative overflow-hidden flex-1 h-10 text-[10px] font-extrabold uppercase tracking-wider rounded-2xl bg-emerald-600/90 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white backdrop-blur-xl border border-white/40 shadow-[0_10px_30px_rgba(16,185,129,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] transition-all cursor-pointer flex items-center justify-center gap-1 min-w-0"
             >
               <GlassSheen />
-              <span className="relative z-10 truncate">Continuar a {isQrFlow ? 'Detalles' : esMaquina ? 'Equipo' : 'Ubicación'}</span>
+              <span className="relative z-10 truncate">Continuar a {esMaquina ? 'Incidencia' : 'Ubicación'}</span>
               <Icon name="arrow_forward" size="14px" className="relative z-10 shrink-0" />
             </button>
           </div>

@@ -194,10 +194,11 @@ export const NuevoReporteDesktop = ({
 
   // Validaciones por paso
   const isStep1Valid = Boolean(categoria);
-  const isStep2Valid = Boolean(incidente);
-  const isStep3Valid = esMaquina
-    ? Boolean(maquinaData && (!paroProduccion || fechaParoProduccion))
-    : Boolean(planta && area.trim());
+  const isIncidenteValid = Boolean(incidente);
+  const isMaquinaValid = Boolean(maquinaData && (!paroProduccion || fechaParoProduccion));
+  const isUbicacionValid = Boolean(planta && area.trim());
+  const isStep2Valid = esMaquina ? isMaquinaValid : isIncidenteValid;
+  const isStep3Valid = esMaquina ? isIncidenteValid : isUbicacionValid;
   const isStep4Valid = Boolean(
     descripcion &&
       descripcion.trim().length >= 10 &&
@@ -217,17 +218,17 @@ export const NuevoReporteDesktop = ({
       return;
     }
     if (step === 2 && !isStep2Valid) {
-      notify.error('Selecciona un tipo de incidencia para continuar.');
-      return;
-    }
-    if (step === 2 && isQrFlow) {
-      setStep(4);
+      if (esMaquina) {
+        if (!maquinaData) notify.error('Falta vincular la máquina.');
+        else if (paroProduccion && !fechaParoProduccion) notify.error('Debe seleccionar la fecha y hora del paro.');
+      } else {
+        notify.error('Selecciona un tipo de incidencia para continuar.');
+      }
       return;
     }
     if (step === 3 && !isStep3Valid) {
       if (esMaquina) {
-        if (!maquinaData) notify.error('Falta vincular la máquina.');
-        else if (paroProduccion && !fechaParoProduccion) notify.error('Debe seleccionar la fecha y hora del paro.');
+        notify.error('Selecciona un tipo de incidencia para continuar.');
       } else {
         if (!planta) notify.error('Selecciona una planta.');
         else if (!area.trim()) notify.error('Indica el área u ubicación.');
@@ -407,50 +408,17 @@ export const NuevoReporteDesktop = ({
                     : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
                 )}
               >
-                Continuar a Tipo de Incidencia →
+                Continuar a {esMaquina ? 'Vinculación de Equipo' : 'Tipo de Incidencia'} →
               </button>
             </div>
           </div>
         )}
 
-        {/* PASO 2: Tipo de Incidencia */}
+        {/* PASO 2: Tipo de Incidencia o Vinculación de Maquinaria */}
         {step === 2 && (
           <div className="w-full bg-white/85 backdrop-blur-xl border border-white/50 p-4 rounded-2xl shadow-xs flex flex-col justify-between flex-1 overflow-hidden gap-3">
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2 shrink-0">
-              Paso 2: Tipo de Incidencia ({categoriaSeleccionada?.nombre || ''})
-            </h3>
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden pr-1">
-              <IncidenteSelector
-                incidentes={categoriaSeleccionada?.incidentes || []}
-                incidenteSeleccionadoId={incidente?.id}
-                onSelectIncidente={handleIncidenteSelect}
-              />
-            </div>
-            <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100 shrink-0">
-              <button
-                type="button"
-                onClick={handlePrevStep}
-                className="h-10 px-4 text-xs font-bold uppercase tracking-wider rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 border border-slate-200/80 transition-all cursor-pointer"
-              >
-                ← Anterior
-              </button>
-              <button
-                type="button"
-                disabled={!isStep2Valid}
-                onClick={handleNextStep}
-                className="h-10 px-5 text-xs font-bold uppercase tracking-wider rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
-              >
-                Continuar a {isQrFlow ? 'Descripción' : esMaquina ? 'Vinculación de Equipo' : 'Planta y Área'} →
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* PASO 3: Ubicación o Vinculación */}
-        {step === 3 && (
-          <div className="w-full bg-white/85 backdrop-blur-xl border border-white/50 p-4 rounded-2xl shadow-xs flex flex-col justify-between flex-1 overflow-hidden gap-3">
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2 shrink-0">
-              Paso 3: {esMaquina ? 'Vinculación de Equipo' : 'Ubicación'}
+              Paso 2: {esMaquina ? 'Vinculación de Equipo' : `Tipo de Incidencia (${categoriaSeleccionada?.nombre || ''})`}
             </h3>
             <div className="flex-1 overflow-y-auto max-h-[360px] pr-1 flex flex-col gap-3 justify-center">
               {esMaquina ? (
@@ -481,6 +449,47 @@ export const NuevoReporteDesktop = ({
                     </div>
                   )}
                 </>
+              ) : (
+                <IncidenteSelector
+                  incidentes={categoriaSeleccionada?.incidentes || []}
+                  incidenteSeleccionadoId={incidente?.id}
+                  onSelectIncidente={handleIncidenteSelect}
+                />
+              )}
+            </div>
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100 shrink-0">
+              <button
+                type="button"
+                onClick={handlePrevStep}
+                className="h-10 px-4 text-xs font-bold uppercase tracking-wider rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 border border-slate-200/80 transition-all cursor-pointer"
+              >
+                ← Anterior
+              </button>
+              <button
+                type="button"
+                disabled={!isStep2Valid}
+                onClick={handleNextStep}
+                className="h-10 px-5 text-xs font-bold uppercase tracking-wider rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+              >
+                Continuar a {esMaquina ? 'Tipo de Incidencia' : 'Planta y Área'} →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* PASO 3: Incidencia de Maquinaria o Ubicación */}
+        {step === 3 && (
+          <div className="w-full bg-white/85 backdrop-blur-xl border border-white/50 p-4 rounded-2xl shadow-xs flex flex-col justify-between flex-1 overflow-hidden gap-3">
+            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2 shrink-0">
+              Paso 3: {esMaquina ? `Tipo de Incidencia (${categoriaSeleccionada?.nombre || ''})` : 'Ubicación'}
+            </h3>
+            <div className="flex-1 overflow-y-auto max-h-[360px] pr-1 flex flex-col gap-3 justify-center">
+              {esMaquina ? (
+                <IncidenteSelector
+                  incidentes={categoriaSeleccionada?.incidentes || []}
+                  incidenteSeleccionadoId={incidente?.id}
+                  onSelectIncidente={handleIncidenteSelect}
+                />
               ) : (
                 <div className="flex flex-col gap-3">
                   <PlantaSelector
@@ -587,7 +596,7 @@ export const NuevoReporteDesktop = ({
                     onClick={handlePrevStep}
                     className="h-10 px-4 text-xs font-bold uppercase tracking-wider rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 border border-slate-200/80 transition-all cursor-pointer"
                   >
-                    ← Regresar a {esMaquina ? 'Equipo' : 'Ubicación'}
+                    ← Regresar a {esMaquina ? 'Incidencia' : 'Ubicación'}
                   </button>
                   
                   <button
