@@ -36,6 +36,14 @@ registerRoute(
     new NetworkOnly()
 );
 
+// ── Public Autonomos endpoints → siempre red, nunca Cache Storage ─────────────
+registerRoute(
+    ({ url, request }) =>
+        request.method === 'GET' &&
+        /^\/api\/public\/autonomos\//.test(url.pathname),
+    new NetworkOnly()
+);
+
 // ── API → NetworkFirst ────────────────────────────────────────────────────────
 registerRoute(
     ({ url, request }) =>

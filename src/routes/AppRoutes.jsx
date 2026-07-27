@@ -1,7 +1,8 @@
 // src/routes/AppRoutes.jsx
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuthStore } from '@/stores/auth-store';
 import { ProtectedRoute } from './ProtectedRoute';
 import { PublicRoute } from './PublicRoute';
 import { RoleGuard } from './RoleGuard';
@@ -20,6 +21,7 @@ import WelcomePage from '@/features/bienvenida/pages/welcome-page';
 import ActivosPage from '@/features/activos/pages/activos-page';
 import HistoricoPage from '@/features/historico/pages/historico-page';
 import NuevoReportePage from '@/features/nuevo-reporte/pages/nuevo-reporte';
+import NuevoReporteGateway from '@/features/nuevo-reporte/pages/nuevo-reporte-gateway';
 import ReporteDetallePage from '@/features/common/pages/reporte-detalle-page';
 
 const ROLES = {
@@ -27,6 +29,38 @@ const ROLES = {
 };
 
 export const AppRoutes = () => {
+  const [isHydrated, setIsHydrated] = useState(() => useAuthStore.persist.hasHydrated());
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+  // Esperar a que Zustand complete la hidratación de localStorage
+  useEffect(() => {
+    if (useAuthStore.persist.hasHydrated()) {
+      const timer = setTimeout(() => {
+        setIsHydrated(true);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+
+    const unsubFinishHydrate = useAuthStore.persist.onFinishHydrate(() => {
+      setIsHydrated(true);
+    });
+
+    return () => {
+      unsubFinishHydrate();
+    };
+  }, []);
+
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center space-y-4">
+        <div className="w-10 h-10 border-4 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-sm font-semibold text-slate-600 tracking-wide animate-pulse font-sans">
+          Cargando sesión...
+        </p>
+      </div>
+    );
+  }
+
   return (
     <Routes>
       {/* Recibidor SSO */}
@@ -36,6 +70,17 @@ export const AppRoutes = () => {
       <Route element={<PublicRoute />}>
         <Route path="/login" element={<LoginPage />} />
       </Route>
+
+      {/* Enrutamiento dinámico condicional para /nuevo-reporte */}
+      {isAuthenticated ? (
+        <Route element={<ProtectedRoute />}>
+          <Route element={<DashboardLayout />}>
+            <Route path="/nuevo-reporte" element={<NuevoReportePage />} />
+          </Route>
+        </Route>
+      ) : (
+        <Route path="/nuevo-reporte" element={<NuevoReporteGateway />} />
+      )}
 
       {/* Rutas Protegidas */}
       <Route element={<ProtectedRoute />}>
@@ -58,7 +103,6 @@ export const AppRoutes = () => {
             <Route path="/activos" element={<ActivosPage />} />
             <Route path="/historico" element={<HistoricoPage />} />
             <Route path="/reportes/:id" element={<ReporteDetallePage />} />
-            <Route path="/nuevo-reporte" element={<NuevoReportePage />} />
           </Route>
 
         </Route>
