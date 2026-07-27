@@ -22,7 +22,7 @@ if (import.meta.env.PROD) {
         }, 60 * 60 * 1000);
       },
       onOfflineReady() {
-        console.log('[PWA] App lista para usar offline.');
+        console.log('[PWA] App lista.');
       },
     });
   });

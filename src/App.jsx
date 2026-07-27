@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppRoutes } from '@/routes/AppRoutes';
 import { ToastContainer } from '@/components/notification/toast-container';
-import { processSyncQueue } from '@/stores/sync-store';
+import { notify } from '@/components/notification/adaptive-notify';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,16 +15,29 @@ const queryClient = new QueryClient({
 });
 
 export const App = () => {
+  const wasOfflineRef = useRef(!navigator.onLine);
 
   useEffect(() => {
     const handleOnline = () => {
-      console.log('🌐 Volvió internet → sincronizando...');
-      processSyncQueue();
+      window.dispatchEvent(new CustomEvent('cuadra-sync-complete'));
+      queryClient.invalidateQueries();
+      if (wasOfflineRef.current) {
+        notify.info('Conexión restablecida.');
+      }
+      wasOfflineRef.current = false;
+    };
+
+    const handleOffline = () => {
+      wasOfflineRef.current = true;
     };
 
     window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
-    return () => window.removeEventListener('online', handleOnline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, []);
 
   return (

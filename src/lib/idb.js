@@ -1,5 +1,5 @@
 // src/lib/idb.js
-// Capa de persistencia local para offline-first.
+// Capa de persistencia local de snapshots de lectura.
 // Stores:
 //   tickets   → array de tickets del usuario
 //   tecnicos  → array de asignables
@@ -9,8 +9,8 @@
 // Cada store guarda {data, timestamp} para saber qué tan fresco es el dato.
 
 const DB_NAME = 'CuadraPWA';
-const DB_VERSION = 2;
-const STORE_NAMES = ['tickets', 'tecnicos', 'perfil', 'notificaciones', 'metricas', 'sync_queue'];
+const DB_VERSION = 4;
+const STORE_NAMES = ['tickets', 'tecnicos', 'perfil', 'notificaciones', 'metricas'];
 
 let _db = null;
 
@@ -25,13 +25,13 @@ const openDB = () => {
 
       STORE_NAMES.forEach((name) => {
         if (!db.objectStoreNames.contains(name)) {
-          // sync_queue usa autoIncrement para la cola de mutaciones offline
-          if (name === 'sync_queue') {
-            db.createObjectStore(name, { autoIncrement: true });
-          } else {
-            // Todos los demás stores usan 'key' como identificador
-            db.createObjectStore(name, { keyPath: 'key' });
-          }
+          db.createObjectStore(name, { keyPath: 'key' });
+        }
+      });
+
+      ['sync_queue', 'offline_queue'].forEach((name) => {
+        if (db.objectStoreNames.contains(name)) {
+          db.deleteObjectStore(name);
         }
       });
     };

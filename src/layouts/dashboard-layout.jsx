@@ -11,14 +11,14 @@ import { OfflineBanner } from '@/components/ui/offline-banner';
 import { subscribeToPush } from '@/lib/push';
 import { notify } from '@/components/notification/adaptive-notify';
 import socket from '@/lib/socket';
-import { useSyncStore } from '@/stores/sync-store';
+import { useRefreshStore } from '@/stores/refresh-store';
 
 export const DashboardLayout = () => {
   const isDesktop = useIsDesktop();
   const { user } = useAuthStore();
   const currentUser = user?.data || user;
   const { setNoLeidas, increment } = useNotifyStore();
-  const triggerSync = useSyncStore((s) => s.triggerSync);
+  const triggerRefresh = useRefreshStore((s) => s.triggerRefresh);
 
   // Hidratación de perfil
   useEffect(() => {
@@ -30,6 +30,7 @@ export const DashboardLayout = () => {
         })
         .catch((err) => console.warn('Hydratación silenciosa fallida:', err.message));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Se hidrata solo al cambiar el usuario autenticado.
   }, [currentUser?.id]);
 
   // Conteo inicial de no leídas
@@ -57,7 +58,7 @@ export const DashboardLayout = () => {
       increment(); // Sube el contador rojo global
       notify.info(data?.mensaje || "Tienes una nueva notificación.");
 
-      triggerSync();
+      triggerRefresh();
 
       // 🔥 Emitimos la señal para actualizar la bandeja en tiempo real
       window.dispatchEvent(new Event('refrescar-notificaciones'));
@@ -65,7 +66,7 @@ export const DashboardLayout = () => {
 
     const handleDatosActualizados = (data) => {
       if (data?.module === "tickets") {
-        triggerSync();
+        triggerRefresh();
       }
     };
 
@@ -77,7 +78,7 @@ export const DashboardLayout = () => {
       socket.off("datos_actualizados", handleDatosActualizados);
       socket.disconnect();
     };
-  }, [currentUser?.id, increment, triggerSync]);
+  }, [currentUser?.id, increment, triggerRefresh]);
 
   return (
     <>

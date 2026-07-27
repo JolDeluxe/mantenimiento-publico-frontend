@@ -38,7 +38,9 @@ registerRoute(
 
 // ── API → NetworkFirst ────────────────────────────────────────────────────────
 registerRoute(
-    ({ url }) => url.pathname.startsWith('/api/'),
+    ({ url, request }) =>
+        request.method === 'GET' &&
+        url.pathname.startsWith('/api/'),
     new NetworkFirst({
         cacheName: 'cuadra-api-v1',
         networkTimeoutSeconds: 5,

@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useIsDesktop } from '@/hooks/useMediaQuery';
 import { useAuthStore } from '@/stores/auth-store';
 import { useNotifyStore } from '@/stores/notify-store';
-import { useSyncStore } from '@/stores/sync-store';
+import { useRefreshStore } from '@/stores/refresh-store';
 import { useNotify } from '../hooks/use-notify';
 import { NotifyDesktop } from '../views/notify-desktop';
 import { NotifyMobile } from '../views/notify-mobile';
@@ -21,7 +21,7 @@ export default function NotifyPage() {
     const resetNotifyStore = useNotifyStore((state) => state.reset);
     const decrementNotifyStore = useNotifyStore((state) => state.decrement);
 
-    const lastUpdate = useSyncStore((state) => state.lastUpdate);
+    const lastUpdate = useRefreshStore((state) => state.lastUpdate);
     const prevUpdate = useRef(lastUpdate);
 
     const {

@@ -7,7 +7,7 @@ import {
   markActioned,
 } from '../api/notificaciones-api';
 import { readSnapshot, writeSnapshot } from '@/lib/idb';
-import { useSyncStore } from '@/stores/sync-store'; // 🟢 1. Importamos el cerebro
+import { useRefreshStore } from '@/stores/refresh-store';
 
 export const useNotify = () => {
   const [notificaciones, setNotificaciones] = useState([]);
@@ -23,8 +23,7 @@ export const useNotify = () => {
 
   const lastFetchParams = useRef({});
 
-  // 🟢 2. Suscripción atómica al reloj de Sockets
-  const lastUpdate = useSyncStore((state) => state.lastUpdate);
+  const lastUpdate = useRefreshStore((state) => state.lastUpdate);
   const isFirstRender = useRef(true);
 
   const fetchNotificaciones = useCallback(async (params = {}, append = false, silent = false) => {
@@ -105,7 +104,9 @@ export const useNotify = () => {
       await markAsRead(id);
       setNotificaciones((prev) => prev.map((n) => (n.id === id ? { ...n, leida: true } : n)));
       setMeta((prev) => ({ ...prev, noLeidas: Math.max(0, prev.noLeidas - 1) }));
-    } catch { }
+    } catch {
+      // Lectura optimista: si falla, la próxima carga corrige el estado.
+    }
   }, []);
 
   const handleMarkAllRead = useCallback(async () => {
@@ -124,10 +125,12 @@ export const useNotify = () => {
       await markActioned(id);
       setNotificaciones((prev) => prev.map((n) => (n.id === id ? { ...n, leida: true, accionada: true } : n)));
       setMeta((prev) => ({ ...prev, noLeidas: Math.max(0, prev.noLeidas - 1) }));
-    } catch { }
+    } catch {
+      // Lectura optimista: si falla, la próxima carga corrige el estado.
+    }
   }, []);
 
-  // 🟢 4. MOTOR REACTIVO: Reacciona a Zustand en lugar de depender de Window Events
+  // MOTOR REACTIVO: Reacciona a cambios externos de datos.
   useEffect(() => {
     // Evita ejecutarse en la carga inicial de React
     if (isFirstRender.current) {

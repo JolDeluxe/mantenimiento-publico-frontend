@@ -19,10 +19,6 @@ export const changeReporteStatus = async (id, data) => {
   return response.data || response;
 };
 
-/**
- * Funciones de la API offline para sync-store.js
- * Mantienen la firma, rutas, métodos HTTP y headers exactos del módulo tickets-api original.
- */
 export const createTicket = (data) =>
   axios.post('/api/tickets', data, {
     headers: { 'Content-Type': 'multipart/form-data' },

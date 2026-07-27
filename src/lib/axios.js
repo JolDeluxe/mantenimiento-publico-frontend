@@ -2,60 +2,93 @@ import axios from 'axios';
 import { useAuthStore } from '@/stores/auth-store';
 import { ENV } from '@/config/env';
 
-// --- INFRAESTRUCTURA OFFLINE (Nativa, sin dependencias extra) ---
-const DB_NAME = 'CuadraSyncDB';
-const STORE_NAME = 'failed_requests';
+const MUTATION_METHODS = ['post', 'put', 'patch', 'delete'];
+const pendingMutations = new Map();
+const OFFLINE_MESSAGE = 'Sin conexión a internet. Conéctate para continuar.';
+const UNSTABLE_CONNECTION_MESSAGE = 'La conexión está inestable. Espera un momento antes de volver a intentar.';
 
-const openDB = () => new Promise((resolve, reject) => {
-  const request = indexedDB.open(DB_NAME, 1);
-  request.onupgradeneeded = (e) => e.target.result.createObjectStore(STORE_NAME, { autoIncrement: true });
-  request.onsuccess = (e) => resolve(e.target.result);
-  request.onerror = (e) => reject(e.target.error);
-});
+const normalizeForKey = (value) => {
+  if (value instanceof FormData) {
+    return Array.from(value.entries()).map(([key, fieldValue]) => [
+      key,
+      fieldValue instanceof File
+        ? { name: fieldValue.name, size: fieldValue.size, type: fieldValue.type, lastModified: fieldValue.lastModified }
+        : fieldValue
+    ]);
+  }
 
-const saveToOfflineQueue = async (requestConfig) => {
-  const db = await openDB();
-  const tx = db.transaction(STORE_NAME, 'readwrite');
-  tx.objectStore(STORE_NAME).add({
-    url: requestConfig.url,
-    method: requestConfig.method,
-    data: requestConfig.data,
-    headers: requestConfig.headers,
-    timestamp: Date.now()
+  if (Array.isArray(value)) {
+    return value.map(normalizeForKey);
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.keys(value).sort().reduce((acc, key) => {
+      acc[key] = normalizeForKey(value[key]);
+      return acc;
+    }, {});
+  }
+
+  return value;
+};
+
+const getMutationKey = (config) => {
+  const method = config.method?.toLowerCase();
+  if (!MUTATION_METHODS.includes(method) || config._isRetry) return null;
+  return JSON.stringify({
+    method,
+    url: config.url,
+    data: normalizeForKey(config.data),
   });
 };
 
-const processOfflineQueue = async () => {
-  const db = await openDB();
-  const tx = db.transaction(STORE_NAME, 'readwrite');
-  const store = tx.objectStore(STORE_NAME);
-  const request = store.getAll();
+const createConnectivityError = (message) => {
+  const error = new Error(message);
+  error.userMessage = message;
+  error.response = {
+    data: {
+      error: message,
+      message,
+    },
+  };
+  return error;
+};
 
-  request.onsuccess = async () => {
-    const requests = request.result;
-    if (requests.length === 0) return;
+const normalizeConnectivityError = (error, message) => {
+  error.message = message;
+  error.userMessage = message;
+  error.response = {
+    ...(error.response || {}),
+    data: {
+      ...(error.response?.data || {}),
+      error: message,
+      message,
+    },
+  };
+  return error;
+};
 
-    console.log(`🔄 Sincronizando ${requests.length} peticiones encoladas...`);
-    let syncSuccessful = false;
+const isConnectivityError = (error) => (
+  !error.response &&
+  (error.message === 'Network Error' || error.code === 'ERR_NETWORK' || error.code === 'ECONNABORTED')
+);
 
-    for (const req of requests) {
-      try {
-        await api({ ...req, _isRetry: true });
-        syncSuccessful = true;
-      } catch (err) {
-        console.error('Fallo al sincronizar petición encolada:', err);
-      }
-    }
-    
-    store.clear();
+const attachMutationDedupe = (config, mutationKey) => {
+  const originalAdapter = config.adapter;
 
-    // Puente hacia React: Avisar que la BD local se vació y el backend tiene datos nuevos
-    if (syncSuccessful) {
-      window.dispatchEvent(new CustomEvent('cuadra-sync-complete'));
-    }
+  config.adapter = (adapterConfig) => {
+    const inFlight = pendingMutations.get(mutationKey);
+    if (inFlight) return inFlight;
+
+    const httpAdapter = axios.getAdapter(originalAdapter || api.defaults.adapter || axios.defaults.adapter);
+    const request = Promise.resolve(httpAdapter(adapterConfig))
+      .finally(() => {
+        pendingMutations.delete(mutationKey);
+      });
+
+    pendingMutations.set(mutationKey, request);
+    return request;
   };
 };
-// ------------------------------------------------------------------
 
 const api = axios.create({
   baseURL: ENV.API_URL,
@@ -113,6 +146,16 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
+    const mutationKey = getMutationKey(config);
+    if (mutationKey) {
+      if (!navigator.onLine) {
+        throw createConnectivityError(OFFLINE_MESSAGE);
+      }
+
+      config._mutationKey = mutationKey;
+      attachMutationDedupe(config, mutationKey);
+    }
+
     if (ENV.IS_DEV) {
       console.log(`🌐 [${config.method?.toUpperCase()}] ${config.url}`, {
         hasToken: !!token,
@@ -132,15 +175,14 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Intercepción de error de red (Modo Offline)
-    if (!error.response && error.message === 'Network Error') {
-      const isMutation = ['post', 'put', 'patch', 'delete'].includes(originalRequest.method);
-      if (isMutation && !originalRequest._isRetry) {
-        console.warn('📡 Guardando mutación en cola local (Offline)');
-        await saveToOfflineQueue(originalRequest);
-        return Promise.reject(new Error('Modo offline: La acción ha sido guardada y se sincronizará automáticamente.'));
+    // Intercepción de error de red. Las mutaciones no se encolan para evitar duplicados.
+    if (isConnectivityError(error)) {
+      const isMutation = MUTATION_METHODS.includes(originalRequest?.method);
+      if (isMutation && !originalRequest?._isRetry) {
+        console.warn('[OFFLINE] Mutacion detenida por conexion inestable.');
+        return Promise.reject(normalizeConnectivityError(error, UNSTABLE_CONNECTION_MESSAGE));
       }
-      console.error('📡 Error de Red - Backend no disponible');
+      console.error('[OFFLINE] Error de red durante lectura.');
       return Promise.reject(error);
     }
 
