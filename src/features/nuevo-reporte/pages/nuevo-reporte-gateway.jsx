@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { extractMachineCode } from '../utils/qr-parser';
 import { getAutonomosGateway } from '@/features/autonomo/api/autonomo-api';
 import { SelectorTipoMantenimiento } from '../components/selector-tipo-mantenimiento';
+import { Icon } from '@/components/ui/z_index';
 
 export const NuevoReporteGateway = () => {
   const location = useLocation();
@@ -46,6 +47,10 @@ export const NuevoReporteGateway = () => {
     navigate('/login', { state: { from: location } });
   };
 
+  const handleSelectAutonomo = () => {
+    navigate(`/autonomo?codigo=${codigo}`);
+  };
+
   if (!prefillParam || !codigo) {
     return null;
   }
@@ -71,7 +76,7 @@ export const NuevoReporteGateway = () => {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-6 space-y-6 text-center">
-          <span className="material-symbols-outlined text-red-500 text-5xl">error</span>
+          <Icon name="error" size="xl" className="text-red-500" />
           <div className="space-y-2">
             <h3 className="text-lg font-bold text-slate-800">Error</h3>
             <p className="text-xs text-slate-500 leading-relaxed font-sans">{errorMessage}</p>
@@ -101,6 +106,7 @@ export const NuevoReporteGateway = () => {
         maquina={query.data.maquina}
         tienePlantilla={query.data.tienePlantilla}
         onSelectCorrectivo={handleSelectCorrectivo}
+        onSelectAutonomo={handleSelectAutonomo}
       />
     );
   }

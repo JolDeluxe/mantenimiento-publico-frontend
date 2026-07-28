@@ -22,6 +22,7 @@ import ActivosPage from '@/features/activos/pages/activos-page';
 import HistoricoPage from '@/features/historico/pages/historico-page';
 import NuevoReportePage from '@/features/nuevo-reporte/pages/nuevo-reporte';
 import NuevoReporteGateway from '@/features/nuevo-reporte/pages/nuevo-reporte-gateway';
+import AutonomoPage from '@/features/autonomo/pages/autonomo-page';
 import ReporteDetallePage from '@/features/common/pages/reporte-detalle-page';
 
 const ROLES = {
@@ -81,6 +82,9 @@ export const AppRoutes = () => {
       ) : (
         <Route path="/nuevo-reporte" element={<NuevoReporteGateway />} />
       )}
+
+      {/* Formulario autónomo público */}
+      <Route path="/autonomo" element={<AutonomoPage />} />
 
       {/* Rutas Protegidas */}
       <Route element={<ProtectedRoute />}>
