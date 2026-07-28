@@ -143,10 +143,10 @@ export const AutonomoForm = ({ maquina, secciones, onBack }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-12 font-sans">
+    <div className="h-full min-h-0 bg-slate-50 font-sans flex flex-col overflow-hidden">
       
       {/* Navbar Superior */}
-      <header className="sticky top-0 z-10 bg-slate-900 text-white shadow-md">
+      <header className="shrink-0 z-10 bg-slate-900 text-white shadow-md">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
           <button 
             onClick={onBack}
@@ -161,7 +161,8 @@ export const AutonomoForm = ({ maquina, secciones, onBack }) => {
       </header>
 
       {/* Main Container */}
-      <main className="max-w-3xl mx-auto px-4 pt-6 space-y-6">
+      <main className="min-h-0 flex-1 w-full overflow-y-auto overscroll-contain">
+        <div className="max-w-3xl mx-auto px-4 pt-6 space-y-6">
         
         {/* Info Máquina */}
         <section className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm space-y-3">
@@ -338,7 +339,7 @@ export const AutonomoForm = ({ maquina, secciones, onBack }) => {
         </section>
 
         {/* Botones de Envío / Vista Previa */}
-        <section className="pt-4 flex flex-col gap-3">
+        <section className="pt-4 pb-[calc(env(safe-area-inset-bottom)+6rem)] flex flex-col gap-3">
           
           {/* Botón Principal Deshabilitado del MVP */}
           <button
@@ -369,7 +370,7 @@ export const AutonomoForm = ({ maquina, secciones, onBack }) => {
           )}
 
         </section>
-
+        </div>
       </main>
 
       {/* Modal de Vista Previa de Datos (Exclusivo en Desarrollo) */}
