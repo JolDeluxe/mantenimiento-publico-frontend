@@ -1,6 +1,4 @@
 import { Icon, Button } from '@/components/ui/z_index';
-import { cn } from '@/utils/cn';
-import { TIPO_CONFIG } from './notify-config';
 
 const TIPO_OPTIONS = [
     { value: '', label: 'Todos los tipos' },
