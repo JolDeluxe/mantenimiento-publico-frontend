@@ -32,10 +32,14 @@ const GlassToggle = ({ soloNoLeidas, onToggle, noLeidas }) => {
         ...glassBase('light'),
     };
 
-    const buildBtnStyle = (active) =>
-        active
-            ? { ...glassBase('primary'), borderRadius: 10, position: 'relative', overflow: 'hidden' }
-            : { borderRadius: 10, background: 'transparent', border: '1px solid transparent', position: 'relative' };
+    const buildBtnStyle = (active) => {
+        if (active) {
+            const { borderTop: _borderTop, ...activeGlassStyle } = glassBase('primary');
+            return { ...activeGlassStyle, borderRadius: 10, position: 'relative', overflow: 'hidden' };
+        }
+
+        return { borderRadius: 10, background: 'transparent', border: '1px solid transparent', position: 'relative' };
+    };
 
     const options = [
         { label: 'Todas', active: !soloNoLeidas, badge: null },
