@@ -158,7 +158,11 @@ export default function NotifyPage() {
     };
 
     return (
-        <div className="w-full max-w-full md:max-w-3xl lg:max-w-4xl mx-auto p-1 lg:p-10 m-1">
+        <div
+            className={`w-full max-w-full md:max-w-3xl lg:max-w-4xl mx-auto p-1 lg:p-10 ${
+                isDesktop ? 'm-1' : 'h-full overflow-y-auto overscroll-contain custom-scrollbar pb-28'
+            }`}
+        >
             {isDesktop ? <NotifyDesktop {...sharedProps} /> : <NotifyMobile {...sharedProps} />}
 
             <ReporteDetailModal
