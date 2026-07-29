@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CATEGORIAS_REPORTE, PLANTAS } from '../constants';
+import { CATEGORIAS_REPORTE } from '../constants';
 import { StepperHeader } from '../components/stepper-header';
 import { cn } from '@/utils/cn';
 import { CategoriaSelector } from '../components/categoria-selector';
 import { IncidenteSelector } from '../components/incidente-selector';
-import { PlantaSelector } from '../components/planta-selector';
 import { AreaSelector } from '../components/area-selector';
 import { ParoProduccionPanel } from '../components/paro-produccion-panel';
 import { MaquinaReadonlyCard } from '../components/maquina-readonly-card';
@@ -41,16 +40,12 @@ export const NuevoReporteDesktop = ({
   const [categoria, setCategoria] = useState('');
   const [incidente, setIncidente] = useState(null);
   const [tituloPersonalizado, setTituloPersonalizado] = useState('');
-  const [planta, setPlanta] = useState('KAPPA');
   const [area, setArea] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [imagenes, setImagenes] = useState([]);
 
   // Fase dentro del Paso 4 (false = Redactando, true = Revisando Resumen Final)
   const [modoResumenFinal, setModoResumenFinal] = useState(false);
-
-  // Plantas operativas desde backend
-  const plantas = PLANTAS;
 
   // Estados para vinculación de Maquinaria
   const [codigoMaquina, setCodigoMaquina] = useState('');
@@ -219,7 +214,7 @@ export const NuevoReporteDesktop = ({
   const isStep1Valid = Boolean(categoria);
   const isIncidenteValid = Boolean(incidente);
   const isMaquinaValid = Boolean(maquinaData && (!paroProduccion || fechaParoProduccion));
-  const isUbicacionValid = Boolean(planta && area.trim());
+  const isUbicacionValid = Boolean(area.trim());
   const isStep2Valid = esMaquina ? isMaquinaValid : isIncidenteValid;
   const isStep3Valid = esMaquina ? isIncidenteValid : isUbicacionValid;
   const isStep4Valid = Boolean(
@@ -253,8 +248,7 @@ export const NuevoReporteDesktop = ({
       if (esMaquina) {
         notify.error('Selecciona un tipo de incidencia para continuar.');
       } else {
-        if (!planta) notify.error('Selecciona una planta.');
-        else if (!area.trim()) notify.error('Indica el área u ubicación.');
+        if (!area.trim()) notify.error('Indica el área u ubicación.');
       }
       return;
     }
@@ -312,10 +306,6 @@ export const NuevoReporteDesktop = ({
         return;
       }
     } else {
-      if (!planta) {
-        notify.error('Selecciona una planta.');
-        return;
-      }
       if (!area.trim()) {
         notify.error('Indica el área u ubicación.');
         return;
@@ -326,7 +316,7 @@ export const NuevoReporteDesktop = ({
 
     try {
       const formData = new FormData();
-      formData.append('categoria', categoria);
+      formData.append('categoria', categoriaSeleccionada.categoria);
       formData.append('incidenteId', incidente.id);
       
       const tituloFinal = incidente.permiteTituloPersonalizado
@@ -343,7 +333,6 @@ export const NuevoReporteDesktop = ({
           formData.append('fechaParoProduccion', new Date(fechaParoProduccion).toISOString());
         }
       } else {
-        formData.append('planta', planta);
         formData.append('area', area.trim());
       }
 
@@ -494,7 +483,7 @@ export const NuevoReporteDesktop = ({
                 onClick={handleNextStep}
                 className="h-10 px-5 text-xs font-bold uppercase tracking-wider rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed text-white shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
               >
-                Continuar a {esMaquina ? 'Tipo de Incidencia' : 'Planta y Área'} →
+                Continuar a {esMaquina ? 'Tipo de Incidencia' : 'Área'} →
               </button>
             </div>
           </div>
@@ -515,14 +504,7 @@ export const NuevoReporteDesktop = ({
                 />
               ) : (
                 <div className="flex flex-col gap-3">
-                  <PlantaSelector
-                    plantas={plantas}
-                    plantaSeleccionada={planta}
-                    onChangePlanta={setPlanta}
-                    error={submitted && !planta}
-                  />
                   <AreaSelector
-                    plantaSeleccionada={planta}
                     areaSeleccionada={area}
                     onChangeArea={setArea}
                     error={submitted && !area.trim()}
@@ -674,7 +656,7 @@ export const NuevoReporteDesktop = ({
                             ? maquinaData
                               ? `${maquinaData.nombre} [${maquinaData.codigo}] — Planta ${maquinaData.planta}`
                               : 'Equipo sin vincular'
-                            : `Planta ${planta} — ${area}`}
+                            : area}
                         </span>
                       </div>
                       {esMaquina && maquinaData && paroProduccion && (
@@ -748,7 +730,6 @@ export const NuevoReporteDesktop = ({
           maquinaData={maquinaData}
           paroProduccion={paroProduccion}
           fechaParoProduccion={fechaParoProduccion}
-          planta={planta}
           area={area}
           esMaquina={esMaquina}
           currentStep={step}

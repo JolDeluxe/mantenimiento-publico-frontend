@@ -1,7 +1,7 @@
 import React from 'react';
 import { Icon } from '@/components/ui/z_index';
 import { ReporteStatusBadge } from './reporte-status-badge';
-import { CATEGORIAS_MAP } from '../constants/reporte-estados';
+import { getCategoriaReporteInfo } from '../constants/reporte-estados';
 import { getPersonalAsignado, resolveAssetUrl } from '../utils/reporte-display';
 import { formatFechaHora, formatRelativo } from '@/lib/date';
 import { cn } from '@/utils/cn';
@@ -40,7 +40,7 @@ export const ReporteCard = ({ reporte, onClick }) => {
     responsables,
   } = reporte;
 
-  const catInfo = CATEGORIAS_MAP[categoria] || { nombre: categoria || 'Solicitud', icon: 'category' };
+  const catInfo = getCategoriaReporteInfo(categoria);
   const asignados = getPersonalAsignado(responsables);
   const asignado = asignados[0];
   const asignadoFoto = resolveAssetUrl(asignado?.imagen);

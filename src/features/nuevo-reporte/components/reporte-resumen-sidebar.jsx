@@ -11,14 +11,13 @@ export const ReporteResumenSidebar = ({
   maquinaData,
   paroProduccion,
   fechaParoProduccion,
-  planta,
   area,
   esMaquina,
   currentStep = 1,
 }) => {
   const tieneUbicacionValida = esMaquina
     ? Boolean(maquinaData && (!paroProduccion || fechaParoProduccion))
-    : Boolean(planta && area.trim());
+    : Boolean(area.trim());
   const steps = [
     {
       number: 1,
@@ -46,7 +45,7 @@ export const ReporteResumenSidebar = ({
       value: esMaquina
         ? incidente?.nombre || 'Por seleccionar...'
         : area
-          ? `Planta ${planta} - ${area}`
+          ? area
           : 'Sin definir...',
     },
     {
