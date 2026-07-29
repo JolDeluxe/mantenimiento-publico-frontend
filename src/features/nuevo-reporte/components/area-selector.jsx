@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { Label, Select, Input } from '@/components/form/z_index';
-import { AREAS_POR_PLANTA, LISTA_AREAS_TODAS } from '../constants';
+import { LISTA_AREAS_TODAS } from '../constants';
 
-export const AreaSelector = ({ plantaSeleccionada, areaSeleccionada, onChangeArea, error }) => {
-  const areasPlanta = AREAS_POR_PLANTA[plantaSeleccionada] || LISTA_AREAS_TODAS;
-  const esOtraArea = areaSeleccionada && !areasPlanta.includes(areaSeleccionada) && areaSeleccionada !== '';
+export const AreaSelector = ({ areaSeleccionada, onChangeArea, error }) => {
+  const esOtraArea = areaSeleccionada && !LISTA_AREAS_TODAS.includes(areaSeleccionada) && areaSeleccionada !== '';
   const [modoCustom, setModoCustom] = useState(esOtraArea);
 
   const handleSelectChange = (e) => {
@@ -35,7 +34,7 @@ export const AreaSelector = ({ plantaSeleccionada, areaSeleccionada, onChangeAre
           className="h-11 bg-white/50 border-slate-200 focus:bg-white rounded-xl focus:ring-2 focus:ring-marca-primario/10 text-xs"
         >
           <option value="">Selecciona el área...</option>
-          {areasPlanta.map((a) => (
+          {LISTA_AREAS_TODAS.map((a) => (
             <option key={a} value={a}>
               {a}
             </option>
@@ -57,7 +56,7 @@ export const AreaSelector = ({ plantaSeleccionada, areaSeleccionada, onChangeAre
             type="button"
             onClick={() => {
               setModoCustom(false);
-              onChangeArea(areasPlanta[0] || '');
+              onChangeArea(LISTA_AREAS_TODAS[0] || '');
             }}
             className="text-[10px] text-marca-primario font-bold underline text-right cursor-pointer mt-0.5"
           >

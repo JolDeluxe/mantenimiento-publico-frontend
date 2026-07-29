@@ -1,6 +1,7 @@
 /**
  * Configuración de estados, categorías y utilidades de reportes para el portal público (CLIENTE_INTERNO).
  */
+import { CATEGORIAS_REPORTE } from '../../nuevo-reporte/constants';
 
 export const ESTADOS_CONFIG = {
   PENDIENTE: { status: 'pendiente', label: 'Pendiente' },
@@ -28,18 +29,25 @@ export const PRIORIDAD_COLORS = {
   CRITICA: 'bg-red-50 text-red-700 border-red-200',
 };
 
-export const CATEGORIAS_MAP = {
-  MAQUINARIA: { nombre: 'Maquinaria', icon: 'precision_manufacturing' },
-  INFRAESTRUCTURA: { nombre: 'Infraestructura', icon: 'domain' },
-  MOBILIARIO: { nombre: 'Mobiliario', icon: 'chair' },
-  ELECTRICO: { nombre: 'Eléctrico e Iluminación', icon: 'electric_bolt' },
-  CLIMATIZACION: { nombre: 'Climas y Ventilación', icon: 'hvac' },
-  PLOMERIA: { nombre: 'Plomería y Sanitarios', icon: 'water_drop' },
-  SEGURIDAD: { nombre: 'Seguridad', icon: 'shield' },
-  LIMPIEZA: { nombre: 'Limpieza', icon: 'cleaning_services' },
-  SISTEMAS: { nombre: 'Sistemas', icon: 'computer' },
-  OTRO: { nombre: 'Otro', icon: 'more_horiz' },
+export const getCategoriaReporteInfo = (categoria) => {
+  const exactMatch = CATEGORIAS_REPORTE.find((item) => item.id === categoria);
+  const canonicalMatch = CATEGORIAS_REPORTE.find((item) => item.categoria === categoria);
+  const match = exactMatch || canonicalMatch;
+
+  return {
+    nombre: match?.nombre || categoria || 'Solicitud',
+    icon: match?.icon || 'category',
+    categoria: match?.categoria || categoria || null,
+  };
 };
+
+export const CATEGORIAS_MAP = CATEGORIAS_REPORTE.reduce((acc, item) => {
+  acc[item.id] = { nombre: item.nombre, icon: item.icon, categoria: item.categoria };
+  if (!acc[item.categoria]) {
+    acc[item.categoria] = { nombre: item.nombre, icon: item.icon, categoria: item.categoria };
+  }
+  return acc;
+}, {});
 
 /**
  * Determina si un estado corresponde a la vista de Activos o Histórico

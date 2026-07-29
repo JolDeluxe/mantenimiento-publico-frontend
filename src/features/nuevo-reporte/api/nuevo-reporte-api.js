@@ -10,10 +10,3 @@ export const createReporte = (formData) => {
     },
   });
 };
-
-/**
- * Obtiene la lista de plantas operativas disponibles.
- */
-export const getPlantas = () => {
-  return axios.get('/api/tickets/plantas');
-};

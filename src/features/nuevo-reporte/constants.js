@@ -2,54 +2,36 @@
  * Constantes específicas para el flujo de creación de reportes.
  * Fuente única de verdad para categorías, incidentes, áreas, iconos, imágenes y descripciones.
  */
-export const AREAS_POR_PLANTA = {
-  KAPPA: [
-    'ACABADO',
-    'ADMINISTRACION',
-    'ADORNO',
-    'ALMACEN MP',
-    'ALMACEN PIEL',
-    'AREAS COMUNES',
-    'AVIOS',
-    'BETA 7',
-    'CAPITAL HUMANO',
-    'CHAMARRAS',
-    'CINTOS',
-    'CORTE',
-    'DESARROLLO',
-    'DISEÑO',
-    'LASER',
-    'MAQUILA',
-    'MONTADO',
-    'PESPUNTE',
-    'PRELIMINARES',
-    'PREMONTADO',
-    'SALON',
-    'TALLER',
-    'TRAFICO'
-  ],
-  SIGMA: [
-    'AREAS COMUNES',
-    'PRELIMINARES',
-    'LASER',
-    'BORDADO'
-  ],
-  OMEGA: ['ALMACEN DE PT', 'PT OMEGA'],
-  LAMBDA: [
-    'AREAS COMUNES',
-    'BILLETERAS',
-    'BOLSAS',
-    'TORRE 1'
-  ],
-  GENERAL: ['PATIO', 'ESTACIONAMIENTO', 'COMEDOR', 'OFICINAS'],
-};
-
-export const LISTA_AREAS_TODAS = [...new Set(Object.values(AREAS_POR_PLANTA).flat())].sort();
-export const PLANTAS = Object.keys(AREAS_POR_PLANTA).filter((p) => p !== 'GENERAL');
+export const LISTA_AREAS_TODAS = [
+  'ACABADO',
+  'ADORNO',
+  'ALMACEN PIEL',
+  'AREAS COMUNES',
+  'AVIOS',
+  'BETA 7',
+  'BILLETERAS LAMBDA',
+  'BODEGA ANEXA',
+  'BOLSAS LAMBDA',
+  'CAPITAL HUMANO',
+  'CHAMARRAS',
+  'CINTOS',
+  'CORTE',
+  'DESARROLLO',
+  'DISEÑO',
+  'MANTENIMIENTO (TALLER)',
+  'MONTADO',
+  'PESPUNTE',
+  'PREMONTADO',
+  'PT OMEGA',
+  'SALON AGUSTIN',
+  'SIGMA',
+  'TALLER 2',
+];
 
 export const CATEGORIAS_REPORTE = [
   {
     id: 'MAQUINARIA',
+    categoria: 'MAQUINARIA',
     nombre: 'Maquinaria y Climatización',
     icon: 'precision_manufacturing',
     imagen: '/img/escaneo-qr.webp',
@@ -159,6 +141,7 @@ export const CATEGORIAS_REPORTE = [
   },
   {
     id: 'INFRAESTRUCTURA',
+    categoria: 'INFRAESTRUCTURA',
     nombre: 'Infraestructura',
     icon: 'domain',
     imagen: '/img/escaneo-qr.webp',
@@ -214,6 +197,7 @@ export const CATEGORIAS_REPORTE = [
   },
   {
     id: 'MOBILIARIO',
+    categoria: 'MOBILIARIO',
     nombre: 'Mobiliario',
     icon: 'chair',
     imagen: '/img/escaneo-qr.webp',
@@ -260,6 +244,7 @@ export const CATEGORIAS_REPORTE = [
   },
   {
     id: 'ELECTRICO',
+    categoria: 'INFRAESTRUCTURA',
     nombre: 'Eléctrico e Iluminación',
     icon: 'electric_bolt',
     imagen: '/img/escaneo-qr.webp',
@@ -316,6 +301,7 @@ export const CATEGORIAS_REPORTE = [
 
   {
     id: 'PLOMERIA',
+    categoria: 'INFRAESTRUCTURA',
     nombre: 'Plomería y Sanitarios',
     icon: 'water_drop',
     imagen: '/img/escaneo-qr.webp',
@@ -371,6 +357,7 @@ export const CATEGORIAS_REPORTE = [
   },
   {
     id: 'OTRO',
+    categoria: 'EQUIPO/MATERIAL',
     nombre: 'Otro',
     icon: 'more_horiz',
     imagen: '/img/escaneo-qr.webp',
@@ -392,6 +379,5 @@ export const CATEGORIAS_REPORTE = [
 
 export default {
   CATEGORIAS_REPORTE,
-  AREAS_POR_PLANTA,
   LISTA_AREAS_TODAS,
 };

@@ -1,17 +1,41 @@
 import React, { useRef, useState } from 'react';
 import { Icon } from '@/components/ui/z_index';
 
+const MAX_IMAGE_SIZE_MB = 20;
+const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
+const HEIC_EXT_PATTERN = /\.(heic|heif)$/i;
+
+const isAcceptedImage = (file) => {
+  return file.type.startsWith('image/') || HEIC_EXT_PATTERN.test(file.name);
+};
+
 export const ImageUploader = ({ imagenes = [], onImagesChange, maxImages = 3 }) => {
   const fileInputRef = useRef(null);
   const [error, setError] = useState('');
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
+
     if (imagenes.length + files.length > maxImages) {
       setError(`Solo puedes subir un máximo de ${maxImages} imágenes en total.`);
       e.target.value = '';
       return;
     }
+
+    const invalidType = files.find((file) => !isAcceptedImage(file));
+    if (invalidType) {
+      setError('Solo se permiten archivos de imagen.');
+      e.target.value = '';
+      return;
+    }
+
+    const oversized = files.find((file) => file.size > MAX_IMAGE_SIZE_BYTES);
+    if (oversized) {
+      setError(`Cada imagen debe pesar máximo ${MAX_IMAGE_SIZE_MB} MB.`);
+      e.target.value = '';
+      return;
+    }
+
     setError('');
     onImagesChange([...imagenes, ...files]);
     e.target.value = '';
@@ -67,7 +91,7 @@ export const ImageUploader = ({ imagenes = [], onImagesChange, maxImages = 3 }) 
         type="file"
         ref={fileInputRef}
         className="hidden"
-        accept="image/png, image/jpeg, image/webp"
+        accept="image/*,.heic,.heif"
         multiple
         onChange={handleFileChange}
       />
