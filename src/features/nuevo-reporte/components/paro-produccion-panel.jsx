@@ -1,6 +1,11 @@
 import React from 'react';
 import { Icon } from '@/components/ui/z_index';
 import { Label, Input } from '@/components/form/z_index';
+import {
+  getMexicoNowDateTimeLocal,
+  getParoDateTimeError,
+  normalizeParoDateTimeInput,
+} from '../utils/paro-produccion-date';
 
 export const ParoProduccionPanel = ({
   paroProduccion,
@@ -11,6 +16,12 @@ export const ParoProduccionPanel = ({
   onChangeImpactoTemporal,
   submitted,
 }) => {
+  const maxFechaParoProduccion = getMexicoNowDateTimeLocal();
+  const fechaParoFutureError = getParoDateTimeError(fechaParoProduccion);
+  const fechaParoError = submitted && !fechaParoProduccion
+    ? 'Selecciona la fecha y hora aproximada.'
+    : fechaParoFutureError;
+
   return (
     <div className="flex flex-col gap-3 p-4 rounded-2xl border border-red-200/80 bg-red-50/40">
       <div className="flex items-center justify-between">
@@ -19,7 +30,7 @@ export const ParoProduccionPanel = ({
             <Icon name="warning" className="text-base" />
           </div>
           <span className="text-xs font-bold text-slate-800">
-            ¿La falla detuvo la producción del equipo?
+            ¿La producción parece detenida?
           </span>
         </div>
         <label className="relative inline-flex items-center cursor-pointer">
@@ -45,16 +56,17 @@ export const ParoProduccionPanel = ({
           {/* Fecha y hora del paro */}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="fechaParoProduccion" className="text-[10px] font-bold text-red-700 uppercase tracking-wider">
-              Fecha y hora exacta del paro *
+              Fecha y hora aproximada *
             </Label>
             <Input
               id="fechaParoProduccion"
               type="datetime-local"
               name="fechaParoProduccion"
               value={fechaParoProduccion}
-              onChange={(e) => onChangeFechaParoProduccion(e.target.value)}
-              error={submitted && !fechaParoProduccion}
-              helperText={submitted && !fechaParoProduccion ? 'Debe seleccionar la fecha y hora del paro.' : ''}
+              max={maxFechaParoProduccion}
+              onChange={(e) => onChangeFechaParoProduccion(normalizeParoDateTimeInput(e.target.value))}
+              error={Boolean(fechaParoError)}
+              helperText={fechaParoError || ''}
               className="h-11 bg-white border-red-200 focus:border-red-400 rounded-xl"
             />
           </div>
@@ -63,7 +75,7 @@ export const ParoProduccionPanel = ({
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
               <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                Impacto operativo visual (Opcional)
+                Observacion operativa visible (Opcional)
               </Label>
               <span className="text-[9px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                 Nota temporal
@@ -77,7 +89,7 @@ export const ParoProduccionPanel = ({
               className="h-10 bg-white/70 border-slate-200 text-xs rounded-xl"
             />
             <p className="text-[9px] text-slate-400 italic">
-              * Nota temporal: esta información todavía no se almacena en el registro histórico.
+              Esta informacion sera confirmada por el tecnico de mantenimiento.
             </p>
           </div>
         </div>

@@ -18,6 +18,8 @@ import { Icon } from '@/components/ui/z_index';
 import { Input, Label } from '@/components/form/z_index';
 import { GlassSheen } from '@/components/ui/liquid-glass-mobile';
 import { notify } from '@/components/notification/adaptive-notify';
+import { localMXDateTimeInputToISO } from '@/lib/date';
+import { FUTURE_PARO_MESSAGE, isParoDateTimeInFuture } from '../utils/paro-produccion-date';
 
 /**
  * Vista de Escritorio para Creación de Reportes con 4 Pasos Completos.
@@ -213,7 +215,8 @@ export const NuevoReporteDesktop = ({
   // Validaciones por paso
   const isStep1Valid = Boolean(categoria);
   const isIncidenteValid = Boolean(incidente);
-  const isMaquinaValid = Boolean(maquinaData && (!paroProduccion || fechaParoProduccion));
+  const fechaParoEsFutura = paroProduccion && isParoDateTimeInFuture(fechaParoProduccion);
+  const isMaquinaValid = Boolean(maquinaData && (!paroProduccion || (fechaParoProduccion && !fechaParoEsFutura)));
   const isUbicacionValid = Boolean(area.trim());
   const isStep2Valid = esMaquina ? isMaquinaValid : isIncidenteValid;
   const isStep3Valid = esMaquina ? isIncidenteValid : isUbicacionValid;
@@ -239,6 +242,7 @@ export const NuevoReporteDesktop = ({
       if (esMaquina) {
         if (!maquinaData) notify.error('Falta vincular la máquina.');
         else if (paroProduccion && !fechaParoProduccion) notify.error('Debe seleccionar la fecha y hora del paro.');
+        else if (isParoDateTimeInFuture(fechaParoProduccion)) notify.error(FUTURE_PARO_MESSAGE);
       } else {
         notify.error('Selecciona un tipo de incidencia para continuar.');
       }
@@ -305,6 +309,10 @@ export const NuevoReporteDesktop = ({
         notify.error('Debe seleccionar la fecha y hora del paro.');
         return;
       }
+      if (isParoDateTimeInFuture(fechaParoProduccion)) {
+        notify.error(FUTURE_PARO_MESSAGE);
+        return;
+      }
     } else {
       if (!area.trim()) {
         notify.error('Indica el área u ubicación.');
@@ -330,7 +338,7 @@ export const NuevoReporteDesktop = ({
         formData.append('maquinaId', String(maquinaData.maquinaId));
         formData.append('paroProduccion', String(paroProduccion));
         if (paroProduccion && fechaParoProduccion) {
-          formData.append('fechaParoProduccion', new Date(fechaParoProduccion).toISOString());
+          formData.append('fechaParoProduccion', localMXDateTimeInputToISO(fechaParoProduccion));
         }
       } else {
         formData.append('area', area.trim());
@@ -662,7 +670,7 @@ export const NuevoReporteDesktop = ({
                       {esMaquina && maquinaData && paroProduccion && (
                         <div className="flex items-center gap-2 text-[10px] font-bold text-red-600 bg-red-50 border border-red-200/80 p-2 rounded-xl mt-1">
                           <Icon name="error" size="14px" className="shrink-0 text-red-500" />
-                          <span>PARO DE PRODUCCIÓN — {fechaParoProduccion ? new Date(fechaParoProduccion).toLocaleString() : 'Hora requerida'}</span>
+                          <span>PARO VISIBLE REPORTADO — {fechaParoProduccion ? new Date(fechaParoProduccion).toLocaleString() : 'Hora requerida'}</span>
                         </div>
                       )}
                     </div>

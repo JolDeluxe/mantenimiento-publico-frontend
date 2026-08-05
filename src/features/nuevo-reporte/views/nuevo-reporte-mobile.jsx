@@ -19,6 +19,8 @@ import { Input, Label } from '@/components/form/z_index';
 import { GlassSheen } from '@/components/ui/liquid-glass-mobile';
 import { notify } from '@/components/notification/adaptive-notify';
 import { HardReloadButton } from '@/components/ui/hard-reload-button';
+import { localMXDateTimeInputToISO } from '@/lib/date';
+import { FUTURE_PARO_MESSAGE, isParoDateTimeInFuture } from '../utils/paro-produccion-date';
 
 /**
  * Vista Unificada Móvil para Creación de Reportes con 4 Pasos Completos.
@@ -224,7 +226,8 @@ export const NuevoReporteMobile = ({
   // Validaciones por paso
   const isStep1Valid = Boolean(categoria);
   const isIncidenteValid = Boolean(incidente);
-  const isMaquinaValid = Boolean(maquinaData && (!paroProduccion || fechaParoProduccion));
+  const fechaParoEsFutura = paroProduccion && isParoDateTimeInFuture(fechaParoProduccion);
+  const isMaquinaValid = Boolean(maquinaData && (!paroProduccion || (fechaParoProduccion && !fechaParoEsFutura)));
   const isUbicacionValid = Boolean(area.trim());
   const isStep2Valid = esMaquina ? isMaquinaValid : isIncidenteValid;
   const isStep3Valid = esMaquina ? isIncidenteValid : isUbicacionValid;
@@ -254,6 +257,8 @@ export const NuevoReporteMobile = ({
           notify.error('Falta vincular la máquina.');
         } else if (paroProduccion && !fechaParoProduccion) {
           notify.error('Debe seleccionar la fecha y hora del paro.');
+        } else if (isParoDateTimeInFuture(fechaParoProduccion)) {
+          notify.error(FUTURE_PARO_MESSAGE);
         }
       } else {
         notify.error('Selecciona un tipo de incidencia para continuar.');
@@ -297,7 +302,16 @@ export const NuevoReporteMobile = ({
     setSubmitted(true);
 
     if (!isStep1Valid || !isStep2Valid || !isStep3Valid || !isStep4Valid) {
-      notify.error('Todos los campos requeridos deben estar completos.');
+      if (esMaquina && paroProduccion && isParoDateTimeInFuture(fechaParoProduccion)) {
+        notify.error(FUTURE_PARO_MESSAGE);
+      } else {
+        notify.error('Todos los campos requeridos deben estar completos.');
+      }
+      return;
+    }
+
+    if (esMaquina && paroProduccion && isParoDateTimeInFuture(fechaParoProduccion)) {
+      notify.error(FUTURE_PARO_MESSAGE);
       return;
     }
 
@@ -319,7 +333,7 @@ export const NuevoReporteMobile = ({
         formData.append('maquinaId', String(maquinaData.maquinaId));
         formData.append('paroProduccion', String(paroProduccion));
         if (paroProduccion && fechaParoProduccion) {
-          formData.append('fechaParoProduccion', new Date(fechaParoProduccion).toISOString());
+          formData.append('fechaParoProduccion', localMXDateTimeInputToISO(fechaParoProduccion));
         }
       } else {
         formData.append('area', area.trim());
@@ -664,7 +678,7 @@ export const NuevoReporteMobile = ({
                     {esMaquina && maquinaData && paroProduccion && (
                       <div className="flex items-center gap-1.5 text-[9.5px] font-bold text-red-600 bg-red-50 border border-red-200/80 p-1.5 rounded-lg mt-1">
                         <Icon name="error" size="13px" className="shrink-0 text-red-500" />
-                        <span>PARO DE PRODUCCIÓN — {fechaParoProduccion ? new Date(fechaParoProduccion).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Hora requerida'}</span>
+                        <span>PARO VISIBLE REPORTADO — {fechaParoProduccion ? new Date(fechaParoProduccion).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Hora requerida'}</span>
                       </div>
                     )}
                   </div>

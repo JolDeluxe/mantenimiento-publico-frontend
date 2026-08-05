@@ -1,5 +1,6 @@
 import React from 'react';
 import { Icon } from '@/components/ui/z_index';
+import { isParoDateTimeInFuture } from '../utils/paro-produccion-date';
 
 /**
  * Panel lateral de visualización del progreso en tiempo real para Desktop.
@@ -16,7 +17,7 @@ export const ReporteResumenSidebar = ({
   currentStep = 1,
 }) => {
   const tieneUbicacionValida = esMaquina
-    ? Boolean(maquinaData && (!paroProduccion || fechaParoProduccion))
+    ? Boolean(maquinaData && (!paroProduccion || (fechaParoProduccion && !isParoDateTimeInFuture(fechaParoProduccion))))
     : Boolean(area.trim());
   const steps = [
     {
