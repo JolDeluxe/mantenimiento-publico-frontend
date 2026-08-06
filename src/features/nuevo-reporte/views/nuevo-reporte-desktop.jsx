@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CATEGORIAS_REPORTE } from '../constants';
+import { CATEGORIAS_REPORTE, MIN_CARACTERES_DESCRIPCION, MAX_CARACTERES_DESCRIPCION, MAX_CARACTERES_OTRO } from '../constants';
 import { StepperHeader } from '../components/stepper-header';
 import { cn } from '@/utils/cn';
 import { CategoriaSelector } from '../components/categoria-selector';
@@ -12,6 +12,7 @@ import { MaquinaVincularCard } from '../components/maquina-vincular-card';
 import { TituloDisplay } from '../components/titulo-display';
 import { ReporteResumenSidebar } from '../components/reporte-resumen-sidebar';
 import { ImageUploader } from '../components/image-uploader';
+import { DescripcionInput } from '../components/descripcion-input';
 import { getMaquinaPrefill } from '@/features/maquinaria/api/maquinaria-api';
 import { createReporte } from '../api/nuevo-reporte-api';
 import { Icon } from '@/components/ui/z_index';
@@ -220,9 +221,14 @@ export const NuevoReporteDesktop = ({
   const isUbicacionValid = Boolean(area.trim());
   const isStep2Valid = esMaquina ? isMaquinaValid : isIncidenteValid;
   const isStep3Valid = esMaquina ? isIncidenteValid : isUbicacionValid;
+  const numCharsDesc = descripcion ? descripcion.length : 0;
+  const isOtro = incidente?.id === 'OTRO';
+  const maxChars = isOtro ? MAX_CARACTERES_OTRO : MAX_CARACTERES_DESCRIPCION;
+  
   const isStep4Valid = Boolean(
     descripcion &&
-      descripcion.trim().length >= 10 &&
+      numCharsDesc >= MIN_CARACTERES_DESCRIPCION &&
+      numCharsDesc <= maxChars &&
       (!incidente?.permiteTituloPersonalizado || (tituloPersonalizado && tituloPersonalizado.trim().length >= 10))
   );
 
@@ -269,8 +275,16 @@ export const NuevoReporteDesktop = ({
 
   const handleVerResumenFinal = () => {
     setSubmitted(true);
-    if (!descripcion || descripcion.trim().length < 10) {
-      notify.error('Escribe una descripción de al menos 10 caracteres.');
+    const numCharsDesc = descripcion ? descripcion.length : 0;
+    const isOtro = incidente?.id === 'OTRO';
+    const maxChars = isOtro ? MAX_CARACTERES_OTRO : MAX_CARACTERES_DESCRIPCION;
+
+    if (!descripcion || numCharsDesc < MIN_CARACTERES_DESCRIPCION) {
+      notify.error(`Escribe una descripción de al menos ${MIN_CARACTERES_DESCRIPCION} caracteres.`);
+      return;
+    }
+    if (numCharsDesc > maxChars) {
+      notify.error(`La descripción no puede exceder los ${maxChars} caracteres.`);
       return;
     }
     if (incidente?.permiteTituloPersonalizado && (!tituloPersonalizado || tituloPersonalizado.trim().length < 10)) {
@@ -294,8 +308,16 @@ export const NuevoReporteDesktop = ({
       return;
     }
 
-    if (!descripcion || descripcion.trim().length < 10) {
-      notify.error('La descripción debe tener al menos 10 caracteres.');
+    const numCharsDesc = descripcion ? descripcion.length : 0;
+    const isOtro = incidente?.id === 'OTRO';
+    const maxChars = isOtro ? MAX_CARACTERES_OTRO : MAX_CARACTERES_DESCRIPCION;
+
+    if (!descripcion || numCharsDesc < MIN_CARACTERES_DESCRIPCION) {
+      notify.error(`La descripción debe tener al menos ${MIN_CARACTERES_DESCRIPCION} caracteres.`);
+      return;
+    }
+    if (numCharsDesc > maxChars) {
+      notify.error(`La descripción no puede exceder los ${maxChars} caracteres.`);
       return;
     }
 
@@ -367,7 +389,7 @@ export const NuevoReporteDesktop = ({
     <div className="w-full h-full grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch overflow-hidden">
       
       {/* Columna Izquierda (7 Cols): Selección Paso a Paso */}
-      <div className="lg:col-span-7 flex flex-col justify-between gap-3 h-full overflow-hidden">
+      <div className="lg:col-span-7 flex flex-col gap-4 h-full overflow-y-auto custom-scrollbar pr-2 pb-6">
         
         {/* Encabezado de Sección */}
         <div className="shrink-0 flex items-center justify-between border-b border-slate-200/80 pb-3 mb-1">
@@ -399,11 +421,11 @@ export const NuevoReporteDesktop = ({
 
         {/* PASO 1: Categoría Principal */}
         {step === 1 && (
-          <div className="w-full bg-white/85 backdrop-blur-xl border border-white/50 p-4 rounded-2xl shadow-xs flex flex-col justify-between flex-1 overflow-hidden gap-3">
+          <div className="w-full bg-white/85 backdrop-blur-xl border border-white/50 p-4 rounded-2xl shadow-xs flex flex-col gap-3">
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2 shrink-0">
               Paso 1: Selecciona la Categoría Principal
             </h3>
-            <div className="flex-1 h-full overflow-y-auto max-h-[420px] p-2 -m-2 flex flex-col justify-center overflow-x-hidden">
+            <div className="flex flex-col gap-3">
               <CategoriaSelector value={categoria} onChange={handleCategoriaChange} />
             </div>
             {hasPrefill && (prefillLoading || prefillError) && (
@@ -436,11 +458,11 @@ export const NuevoReporteDesktop = ({
 
         {/* PASO 2: Tipo de Incidencia o Vinculación de Maquinaria */}
         {step === 2 && (
-          <div className="w-full bg-white/85 backdrop-blur-xl border border-white/50 p-4 rounded-2xl shadow-xs flex flex-col justify-between flex-1 overflow-hidden gap-3">
+          <div className="w-full bg-white/85 backdrop-blur-xl border border-white/50 p-4 rounded-2xl shadow-xs flex flex-col gap-3">
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2 shrink-0">
               Paso 2: {esMaquina ? 'Vinculación de Equipo' : `Tipo de Incidencia (${categoriaSeleccionada?.nombre || ''})`}
             </h3>
-            <div className="flex-1 overflow-y-auto max-h-[360px] pr-1 flex flex-col gap-3 justify-center">
+            <div className="flex flex-col gap-3">
               {esMaquina ? (
                 <>
                   {!maquinaData ? (
@@ -499,11 +521,11 @@ export const NuevoReporteDesktop = ({
 
         {/* PASO 3: Incidencia de Maquinaria o Ubicación */}
         {step === 3 && (
-          <div className="w-full bg-white/85 backdrop-blur-xl border border-white/50 p-4 rounded-2xl shadow-xs flex flex-col justify-between flex-1 overflow-hidden gap-3">
+          <div className="w-full bg-white/85 backdrop-blur-xl border border-white/50 p-4 rounded-2xl shadow-xs flex flex-col gap-3">
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b border-slate-100 pb-2 shrink-0">
               Paso 3: {esMaquina ? `Tipo de Incidencia (${categoriaSeleccionada?.nombre || ''})` : 'Ubicación'}
             </h3>
-            <div className="flex-1 overflow-y-auto max-h-[360px] pr-1 flex flex-col gap-3 justify-center">
+            <div className="flex flex-col gap-3">
               {esMaquina ? (
                 <IncidenteSelector
                   incidentes={categoriaSeleccionada?.incidentes || []}
@@ -543,7 +565,7 @@ export const NuevoReporteDesktop = ({
 
         {/* PASO 4: Detalles (Fase 1: Redacción | Fase 2: Resumen Pre-Envío) */}
         {step === 4 && (
-          <div className="w-full bg-white/85 backdrop-blur-xl border border-white/50 p-4 rounded-2xl shadow-xs flex flex-col justify-between flex-1 overflow-hidden gap-3">
+          <div className="w-full bg-white/85 backdrop-blur-xl border border-white/50 p-4 rounded-2xl shadow-xs flex flex-col gap-3">
             {!modoResumenFinal ? (
               /* FASE 1: Redacción de Descripción y Título */
               <>
@@ -556,7 +578,7 @@ export const NuevoReporteDesktop = ({
                   </span>
                 </div>
 
-                <div className="flex-1 overflow-y-auto max-h-[500px] pr-1 flex flex-col gap-2">
+                <div className="flex flex-col gap-2">
                   {isQrFlow && (
                     <div className="p-2 rounded-2xl bg-emerald-50/70 border border-emerald-200">
                       <MaquinaReadonlyCard maquinaData={maquinaData} />
@@ -572,29 +594,13 @@ export const NuevoReporteDesktop = ({
                     />
                   </div>
 
-                  <div className="flex flex-col gap-1.5 p-3 rounded-2xl bg-white border border-slate-200 shadow-2xs">
-                    <div className="flex justify-between items-center px-0.5">
-                      <Label htmlFor="descripcionDesktopInput" className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                        Descripción detallada del problema *
-                      </Label>
-                      <span className="text-[9px] font-bold text-slate-400">
-                        {descripcion.length} caracteres
-                      </span>
-                    </div>
-                    <Input
-                      id="descripcionDesktopInput"
-                      name="descripcionDesktopInput"
-                      multiline={true}
+                  <div className="p-3 rounded-2xl bg-white border border-slate-200 shadow-2xs">
+                    <DescripcionInput
                       value={descripcion}
-                      onChange={(e) => setDescripcion(e.target.value)}
-                      placeholder="Describe la falla observada..."
-                      error={submitted && (!descripcion.trim() || descripcion.trim().length < 10)}
-                      helperText={
-                        submitted && (!descripcion.trim() || descripcion.trim().length < 10)
-                          ? 'Mínimo 10 caracteres.'
-                          : ''
-                      }
-                      className="min-h-[80px] bg-white/70 border-slate-200 focus:bg-white rounded-xl p-3 text-xs"
+                      onChange={setDescripcion}
+                      submitted={submitted}
+                      incidente={incidente}
+                      error={submitted && (descripcion.length < MIN_CARACTERES_DESCRIPCION)}
                     />
                   </div>
                   
@@ -609,7 +615,7 @@ export const NuevoReporteDesktop = ({
                     onClick={handlePrevStep}
                     className="h-10 px-4 text-xs font-bold uppercase tracking-wider rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 border border-slate-200/80 transition-all cursor-pointer"
                   >
-                    ← Regresar a {esMaquina ? 'Incidencia' : 'Ubicación'}
+                    &larr; Regresar a {esMaquina ? 'Incidencia' : 'Ubicación'}
                   </button>
                   
                   <button
@@ -625,7 +631,8 @@ export const NuevoReporteDesktop = ({
             ) : (
               /* FASE 2: Resumen Completo del Reporte antes de Enviar */
               <>
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2 shrink-0">
+                <div className="flex flex-col gap-3.5 animate-in fade-in duration-300">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2 shrink-0">
                   <div className="flex items-center gap-2">
                     <Icon name="fact_check" size="18px" className="text-emerald-600" />
                     <h3 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
@@ -637,8 +644,7 @@ export const NuevoReporteDesktop = ({
                   </span>
                 </div>
 
-                <div className="flex-1 overflow-y-auto max-h-[350px] pr-1 flex flex-col gap-3.5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70">
                     <div className="flex flex-col gap-1">
                       <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">Categoría</span>
                       <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
@@ -703,7 +709,7 @@ export const NuevoReporteDesktop = ({
                     onClick={handlePrevStep}
                     className="h-10 px-4 text-xs font-bold uppercase tracking-wider rounded-xl bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 border border-slate-200/80 transition-all cursor-pointer"
                   >
-                    ← Editar Descripción
+                    &larr; Editar Descripción
                   </button>
                   
                   <button

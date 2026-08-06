@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CATEGORIAS_REPORTE } from '../constants';
+import { CATEGORIAS_REPORTE, MIN_CARACTERES_DESCRIPCION, MAX_CARACTERES_DESCRIPCION, MAX_CARACTERES_OTRO } from '../constants';
 import { StepperHeader } from '../components/stepper-header';
 import { cn } from '@/utils/cn';
 import { CategoriaSelector } from '../components/categoria-selector';
@@ -11,6 +11,7 @@ import { ParoProduccionPanel } from '../components/paro-produccion-panel';
 import { QrScannerInput } from '../components/qr-scanner-input';
 import { MaquinaReadonlyCard } from '../components/maquina-readonly-card';
 import { ImageUploader } from '../components/image-uploader';
+import { DescripcionInput } from '../components/descripcion-input';
 import { getMaquinaPrefill } from '@/features/maquinaria/api/maquinaria-api';
 import { createReporte } from '../api/nuevo-reporte-api';
 import { extractMachineCode } from '../utils/qr-parser';
@@ -231,9 +232,14 @@ export const NuevoReporteMobile = ({
   const isUbicacionValid = Boolean(area.trim());
   const isStep2Valid = esMaquina ? isMaquinaValid : isIncidenteValid;
   const isStep3Valid = esMaquina ? isIncidenteValid : isUbicacionValid;
+  const numCharsDesc = descripcion ? descripcion.length : 0;
+  const isOtro = incidente?.id === 'OTRO';
+  const maxChars = isOtro ? MAX_CARACTERES_OTRO : MAX_CARACTERES_DESCRIPCION;
+
   const isStep4Valid = Boolean(
     descripcion &&
-      descripcion.trim().length >= 10 &&
+      numCharsDesc >= MIN_CARACTERES_DESCRIPCION &&
+      numCharsDesc <= maxChars &&
       (!incidente?.permiteTituloPersonalizado || (tituloPersonalizado && tituloPersonalizado.trim().length >= 10))
   );
   const isScanStep = step === 2 && esMaquina && pasoMaquina === 'SCAN';
@@ -286,8 +292,16 @@ export const NuevoReporteMobile = ({
 
   const handleVerResumenFinal = () => {
     setSubmitted(true);
-    if (!descripcion || descripcion.trim().length < 10) {
-      notify.error('Escribe una descripción de al menos 10 caracteres.');
+    const numCharsDesc = descripcion ? descripcion.length : 0;
+    const isOtro = incidente?.id === 'OTRO';
+    const maxChars = isOtro ? MAX_CARACTERES_OTRO : MAX_CARACTERES_DESCRIPCION;
+
+    if (!descripcion || numCharsDesc < MIN_CARACTERES_DESCRIPCION) {
+      notify.error(`Escribe una descripción de al menos ${MIN_CARACTERES_DESCRIPCION} caracteres.`);
+      return;
+    }
+    if (numCharsDesc > maxChars) {
+      notify.error(`La descripción no puede exceder los ${maxChars} caracteres.`);
       return;
     }
     if (incidente?.permiteTituloPersonalizado && (!tituloPersonalizado || tituloPersonalizado.trim().length < 10)) {
@@ -589,31 +603,13 @@ export const NuevoReporteMobile = ({
                     </h4>
                   </div>
 
-                  <div className="flex flex-col gap-1">
-                    <div className="flex justify-between items-center px-0.5">
-                      <Label htmlFor="descripcionInput" className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">
-                        Descripción del problema *
-                      </Label>
-                      <span className="text-[9px] font-bold text-slate-400">
-                        {descripcion.length} caracteres
-                      </span>
-                    </div>
-                    <Input
-                      id="descripcionInput"
-                      name="descripcionInput"
-                      multiline={true}
-                      value={descripcion}
-                      onChange={(e) => setDescripcion(e.target.value)}
-                      placeholder="Describe la falla observada..."
-                      error={submitted && (!descripcion.trim() || descripcion.trim().length < 10)}
-                      helperText={
-                        submitted && (!descripcion.trim() || descripcion.trim().length < 10)
-                          ? 'Mínimo 10 caracteres.'
-                          : ''
-                      }
-                      className="min-h-[70px] bg-white/60 border-slate-200 focus:bg-white rounded-xl p-2.5 text-xs placeholder:text-[10.5px]"
-                    />
-                  </div>
+                  <DescripcionInput
+                    value={descripcion}
+                    onChange={setDescripcion}
+                    submitted={submitted}
+                    incidente={incidente}
+                    error={submitted && (descripcion.length < MIN_CARACTERES_DESCRIPCION)}
+                  />
                   
                   <div className="px-1 border-t border-slate-100 pt-1">
                     <ImageUploader imagenes={imagenes} onImagesChange={setImagenes} maxImages={3} />

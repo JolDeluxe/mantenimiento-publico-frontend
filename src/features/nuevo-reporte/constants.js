@@ -2,31 +2,52 @@
  * Constantes específicas para el flujo de creación de reportes.
  * Fuente única de verdad para categorías, incidentes, áreas, iconos, imágenes y descripciones.
  */
-export const LISTA_AREAS_TODAS = [
-  'ACABADO',
-  'ADORNO',
-  'ALMACEN PIEL',
-  'AREAS COMUNES',
-  'AVIOS',
-  'BETA 7',
-  'BILLETERAS LAMBDA',
-  'BODEGA ANEXA',
-  'BOLSAS LAMBDA',
-  'CAPITAL HUMANO',
-  'CHAMARRAS',
-  'CINTOS',
-  'CORTE',
-  'DESARROLLO',
-  'DISEÑO',
-  'MANTENIMIENTO (TALLER)',
-  'MONTADO',
-  'PESPUNTE',
-  'PREMONTADO',
-  'PT OMEGA',
-  'SALON AGUSTIN',
-  'SIGMA',
-  'TALLER 2',
-];
+export const PLANTAS_AREAS = {
+  KAPPA: [
+    'CASETA KAPPA',
+    'ADMINISTRACION',
+    'COMEDOR',
+    'SALON AGUSTIN',
+    'ALMACEN DE PIELES',
+    'CAPITAL HUMANO',
+    'CONSULTORIO',
+    'ALMACEN MATERIA PRIMA',
+    'DISEÑO',
+    'PESPUNTE',
+    'ADORNO',
+    'CINTOS',
+    'CHAMARRAS',
+    'ACABADO',
+    'DIRECCION',
+    'CASETA LAMBDA',
+    'CELULA DESARROLLO',
+    'MAQUILAS BETA 7',
+    'AVIO'
+  ],
+  LAMBDA: [
+    'BOLSAS',
+    'BILLETERAS'
+  ],
+  OMEGA: [
+    'ALMACEN DE PT'
+  ],
+  SIGMA: [
+    'LASER',
+    'BORDADO'
+  ]
+};
+
+export const LISTA_AREAS_TODAS = Object.values(PLANTAS_AREAS).flat();
+
+export const getPlantaFromArea = (areaName) => {
+  if (!areaName) return null;
+  for (const [planta, areas] of Object.entries(PLANTAS_AREAS)) {
+    if (areas.includes(areaName)) {
+      return planta;
+    }
+  }
+  return null;
+};
 
 export const CATEGORIAS_REPORTE = [
   {
@@ -34,7 +55,7 @@ export const CATEGORIAS_REPORTE = [
     categoria: 'MAQUINARIA',
     nombre: 'Maquinaria y Climatización',
     icon: 'precision_manufacturing',
-    imagen: '/img/escaneo-qr.webp',
+    imagen: '/img/categorias/maquinario.webp',
     descripcion: 'Equipos de producción, aire acondicionado y ventilación.',
     ayuda: 'Selecciona la falla y busca el código del equipo para vincular automáticamente su ubicación.',
     incidentes: [
@@ -144,7 +165,7 @@ export const CATEGORIAS_REPORTE = [
     categoria: 'INFRAESTRUCTURA',
     nombre: 'Infraestructura',
     icon: 'domain',
-    imagen: '/img/escaneo-qr.webp',
+    imagen: '/img/categorias/infraestructura.webp',
     descripcion: 'Pisos, muros, techos e instalaciones.',
     ayuda: 'Indica el área y describe el problema en pisos, muros, techos o instalaciones fijas.',
     incidentes: [
@@ -200,7 +221,7 @@ export const CATEGORIAS_REPORTE = [
     categoria: 'MOBILIARIO',
     nombre: 'Mobiliario',
     icon: 'chair',
-    imagen: '/img/escaneo-qr.webp',
+    imagen: '/img/categorias/mobiliario.webp',
     descripcion: 'Sillas, mesas, estantes y mobiliario.',
     ayuda: 'Describe el mueble afectado, el daño presentado y su ubicación en la planta.',
     incidentes: [
@@ -247,7 +268,7 @@ export const CATEGORIAS_REPORTE = [
     categoria: 'INFRAESTRUCTURA',
     nombre: 'Eléctrico e Iluminación',
     icon: 'electric_bolt',
-    imagen: '/img/escaneo-qr.webp',
+    imagen: '/img/categorias/Iluminacion-electrico.webp',
     descripcion: 'Contactos, lámparas y fallas eléctricas.',
     ayuda: 'Especifica la lámpara, contacto o interruptor averiado y su ubicación exacta.',
     incidentes: [
@@ -304,7 +325,7 @@ export const CATEGORIAS_REPORTE = [
     categoria: 'INFRAESTRUCTURA',
     nombre: 'Plomería y Sanitarios',
     icon: 'water_drop',
-    imagen: '/img/escaneo-qr.webp',
+    imagen: '/img/categorias/plomeria-sanitario.webp',
     descripcion: 'Fugas, tuberías, lavabos y sanitarios.',
     ayuda: 'Reporta fugas de agua, lavabos u obstrucciones de drenaje para atención urgente.',
     incidentes: [
@@ -360,7 +381,7 @@ export const CATEGORIAS_REPORTE = [
     categoria: 'EQUIPO/MATERIAL',
     nombre: 'Otro',
     icon: 'more_horiz',
-    imagen: '/img/escaneo-qr.webp',
+    imagen: '/img/categorias/otro.webp',
     descripcion: 'Cualquier incidencia no clasificada.',
     ayuda: 'Describe detalladamente el requerimiento o falla que no encaje en otras categorías.',
     incidentes: [
@@ -377,7 +398,16 @@ export const CATEGORIAS_REPORTE = [
   },
 ];
 
+export const MIN_CARACTERES_DESCRIPCION = 5;
+export const MAX_CARACTERES_DESCRIPCION = 500;
+export const MAX_CARACTERES_OTRO = 100;
+
 export default {
   CATEGORIAS_REPORTE,
   LISTA_AREAS_TODAS,
+  PLANTAS_AREAS,
+  getPlantaFromArea,
+  MIN_CARACTERES_DESCRIPCION,
+  MAX_CARACTERES_DESCRIPCION,
+  MAX_CARACTERES_OTRO,
 };

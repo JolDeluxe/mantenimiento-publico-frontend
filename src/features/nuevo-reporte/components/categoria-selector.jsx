@@ -31,8 +31,7 @@ const CategoriaCard = ({ categoria, isSelected, onClick }) => {
       {!imageError && (
         <img
           src={categoria.imagen}
-          alt=""
-          aria-hidden="true"
+          alt={`Imagen ilustrativa de ${categoria.nombre}`}
           onError={() => setImageError(true)}
           className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
         />

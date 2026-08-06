@@ -15,8 +15,11 @@ export const CategoriaInfoCard = ({ categoria }) => {
 
   return (
     <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-100/80 border border-slate-200/70 backdrop-blur-md transition-all duration-300 animate-in fade-in duration-300">
-      <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 shrink-0 shadow-xs flex items-center justify-center">
-        <Icon name={catObj.icon} className="text-base" />
+      <div className="relative w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 shrink-0 shadow-xs flex items-center justify-center overflow-hidden border border-emerald-500/20">
+        <Icon name={catObj.icon} className="text-xl absolute opacity-30" />
+        {catObj.imagen && (
+          <img src={catObj.imagen} alt={`Miniatura de ${catObj.nombre}`} className="absolute inset-0 w-full h-full object-cover z-10" onError={(e) => (e.currentTarget.style.display = 'none')} />
+        )}
       </div>
       <div className="flex flex-col gap-0.5 flex-1">
         <div className="flex items-center gap-2">
