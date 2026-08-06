@@ -159,6 +159,24 @@ export const getSemanasInYear = (year) => {
     return info.week === 1 ? 52 : info.week;
 };
 
+export const getMXOffsetMinutes = (date) => {
+    const tzString = date.toLocaleString('en-US', { timeZone: 'America/Mexico_City' });
+    const localDate = new Date(tzString);
+    const utcString = date.toLocaleString('en-US', { timeZone: 'UTC' });
+    const utcDate = new Date(utcString);
+    return Math.round((localDate.getTime() - utcDate.getTime()) / 60000);
+};
+
+export const localMXDateTimeInputToISO = (dateTimeLocal) => {
+    if (!dateTimeLocal) return null;
+    const normalized = dateTimeLocal.length === 16 ? `${dateTimeLocal}:00.000` : dateTimeLocal;
+    const nominal = new Date(`${normalized}Z`);
+    if (isNaN(nominal.getTime())) return null;
+
+    const offsetMin = getMXOffsetMinutes(nominal);
+    return new Date(nominal.getTime() - offsetMin * 60000).toISOString();
+};
+
 /**
  * Devuelve un objeto con startDate y endDate en formato YYYY-MM-DD
  * para rangos comunes.

@@ -1,5 +1,7 @@
 import React from 'react';
 import { Icon } from '@/components/ui/z_index';
+import { isParoDateTimeInFuture } from '../utils/paro-produccion-date';
+import { getPlantaFromArea } from '../constants';
 
 /**
  * Panel lateral de visualización del progreso en tiempo real para Desktop.
@@ -16,7 +18,7 @@ export const ReporteResumenSidebar = ({
   currentStep = 1,
 }) => {
   const tieneUbicacionValida = esMaquina
-    ? Boolean(maquinaData && (!paroProduccion || fechaParoProduccion))
+    ? Boolean(maquinaData && (!paroProduccion || (fechaParoProduccion && !isParoDateTimeInFuture(fechaParoProduccion))))
     : Boolean(area.trim());
   const steps = [
     {
@@ -45,7 +47,7 @@ export const ReporteResumenSidebar = ({
       value: esMaquina
         ? incidente?.nombre || 'Por seleccionar...'
         : area
-          ? area
+          ? `${getPlantaFromArea(area) || 'Otra Planta'} - ${area}`
           : 'Sin definir...',
     },
     {
@@ -63,9 +65,16 @@ export const ReporteResumenSidebar = ({
       {/* Encabezado Ficha del Reporte */}
       <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 shrink-0">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600">
-            <Icon name="assignment" size="16px" />
-          </div>
+          {categoriaSeleccionada?.imagen ? (
+            <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 border border-slate-200 shadow-xs relative bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <Icon name="assignment" size="16px" className="absolute opacity-30" />
+              <img src={categoriaSeleccionada.imagen} alt={`Miniatura de ${categoriaSeleccionada.nombre}`} className="absolute inset-0 w-full h-full object-cover z-10" onError={(e) => (e.currentTarget.style.display = 'none')} />
+            </div>
+          ) : (
+            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600">
+              <Icon name="assignment" size="16px" />
+            </div>
+          )}
           <div>
             <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
               Vista Previa del Reporte
