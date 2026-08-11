@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/auth-store';
+import api, { isSessionInvalidError, isTemporaryAuthError } from '@/lib/axios';
 
 const ROLES_EQUIPO = ['TECNICO', 'COORDINADOR_MTTO', 'JEFE_MTTO', 'SUPER_ADMIN'];
 
 export const ProtectedRoute = () => {
   const location = useLocation();
-  const { isAuthenticated, user: userState, token, refreshToken } = useAuthStore();
+  const { isAuthenticated, user: userState, authStatus, setAuthChecking, setAuthTemporarilyUnavailable, setUnauthenticated } = useAuthStore();
   const user = userState?.data ?? userState;
   const userRol = user?.rol;
   let urlDestino = import.meta.env.VITE_URL_SISTEMA_INTERNO || 'http://localhost:5000';
@@ -16,20 +17,55 @@ export const ProtectedRoute = () => {
     : '';
 
   useEffect(() => {
+    if (isAuthenticated) {
+      return;
+    }
+
+    let active = true;
+    setAuthChecking();
+    api.post('/api/auth/refresh', {})
+      .then((payload) => {
+        if (!active || !payload?.user) return;
+        useAuthStore.getState().setAuth(payload.user);
+      })
+      .catch((error) => {
+        if (!active) return;
+        if (isTemporaryAuthError(error)) {
+          setAuthTemporarilyUnavailable();
+        } else if (isSessionInvalidError(error)) {
+          setUnauthenticated();
+        } else {
+          setAuthTemporarilyUnavailable();
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isAuthenticated, setAuthChecking, setAuthTemporarilyUnavailable, setUnauthenticated]);
+
+  useEffect(() => {
     if (isAuthenticated && ROLES_EQUIPO.includes(userRol)) {
       if (loopDetected) return;
 
-      const payload = encodeURIComponent(JSON.stringify({ user: userState, token, refreshToken }));
-
-      // 🚀 ARREGLO 4: Destruir la sesión zombie en este portal antes de saltar
-      useAuthStore.getState().logout();
-
-      window.location.replace(`${urlDestino}/sso-receiver#payload=${payload}`);
+      window.location.replace(`${urlDestino}/sso-receiver#resume=1`);
     }
-  }, [isAuthenticated, userRol, userState, token, refreshToken, loopDetected, urlDestino]);
+  }, [isAuthenticated, userRol, loopDetected, urlDestino]);
 
   if (loopDetected) {
     return <div className="p-10 text-red-600 font-mono font-bold text-center">🛑 BUCLE INFINITO PREVENIDO: {loopDetected}</div>;
+  }
+
+  if (!isAuthenticated && authStatus === 'CHECKING') {
+    return null;
+  }
+
+  if (!isAuthenticated && authStatus === 'TEMPORARILY_UNAVAILABLE') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-6 text-center text-sm font-semibold text-slate-600">
+        No se pudo verificar tu sesión porque el servidor no está disponible. Intenta recargar en unos momentos.
+      </div>
+    );
   }
 
   if (!isAuthenticated) {

@@ -5,14 +5,16 @@ import { useAuthStore } from '@/stores/auth-store';
 import { glassBase, GlassSheen } from '@/components/ui/liquid-glass-mobile';
 import { useNotifyStore } from '@/stores/notify-store';
 import { NotifyBadge } from '@/features/notificaciones/components/notify-badge';
+import { authService } from '@/features/auth/api/auth-api';
 
 export const MobileHeader = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const { noLeidas } = useNotifyStore();
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const profileRef = useRef(null);
 
   const currentUser = user?.data || user;
@@ -27,7 +29,16 @@ export const MobileHeader = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [profileOpen]);
 
-  const handleLogout = () => { logout(); navigate('/login'); };
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await authService.logout();
+    } catch (error) {
+      alert(error.message || 'No fue posible cerrar sesión. Intenta nuevamente.');
+      setIsLoggingOut(false);
+    }
+  };
   const handleNavigateProfile = () => { navigate('/perfil'); setProfileOpen(false); };
 
   const resolveImageUrl = (path) => {
@@ -76,7 +87,7 @@ export const MobileHeader = () => {
                   <Icon name="account_circle" size="20px" className="text-white drop-shadow-sm" />
                   <span>Ver Perfil Completo</span>
                 </button>
-                <button onClick={handleLogout} className="w-full px-3 py-3 text-left text-sm font-bold hover:bg-red-500/30 active:bg-red-500/50 transition-all flex items-center gap-3 text-red-100 rounded-xl outline-none">
+                <button onClick={handleLogout} disabled={isLoggingOut} className="w-full px-3 py-3 text-left text-sm font-bold hover:bg-red-500/30 active:bg-red-500/50 transition-all flex items-center gap-3 text-red-100 rounded-xl outline-none disabled:opacity-60 disabled:cursor-not-allowed">
                   <Icon name="logout" size="20px" className="text-red-300 drop-shadow-sm" />
                   <span>Cerrar Sesión</span>
                 </button>

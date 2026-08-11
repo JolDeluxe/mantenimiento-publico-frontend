@@ -3,12 +3,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@/components/ui/icon';
 import { useAuthStore } from '@/stores/auth-store';
+import { authService } from '@/features/auth/api/auth-api';
 
 export const UserMenu = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
-  const [imageFailed, setImageFailed] = useState(false);
+  const [failedImageUrl, setFailedImageUrl] = useState(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const menuRef = useRef(null);
 
   const currentUser = user?.data || user;
@@ -23,6 +25,7 @@ export const UserMenu = () => {
   };
 
   const imageUrl = resolveImageUrl(currentUser?.imagen);
+  const imageFailed = imageUrl && failedImageUrl === imageUrl;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -34,13 +37,15 @@ export const UserMenu = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  useEffect(() => {
-    setImageFailed(false);
-  }, [imageUrl]);
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await authService.logout();
+    } catch (error) {
+      alert(error.message || 'No fue posible cerrar sesión. Intenta nuevamente.');
+      setIsLoggingOut(false);
+    }
   };
 
   const handleProfile = () => {
@@ -74,7 +79,7 @@ export const UserMenu = () => {
               src={imageUrl} 
               alt={`Avatar de ${currentUser?.nombre}`} 
               className="w-full h-full object-cover animate-in fade-in duration-300"
-              onError={() => setImageFailed(true)}
+              onError={() => setFailedImageUrl(imageUrl)}
               referrerPolicy="no-referrer"
             />
           ) : (
@@ -120,11 +125,13 @@ export const UserMenu = () => {
 
             <button
               onClick={handleLogout}
+              disabled={isLoggingOut}
               className="
                 cursor-pointer
                 w-full px-4 py-2 text-left text-sm font-medium
                 hover:bg-red-50 transition-colors
                 flex items-center gap-3 text-red-600
+                disabled:opacity-60 disabled:cursor-not-allowed
               "
             >
               <Icon name="logout" size="20px" />
