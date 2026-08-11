@@ -1,6 +1,28 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+const clearLegacyAuthResidue = () => {
+  try {
+    const rawStorage = localStorage.getItem('auth-storage');
+    if (rawStorage) {
+      const storage = JSON.parse(rawStorage);
+      if (storage?.state) {
+        delete storage.state.token;
+        delete storage.state.accessToken;
+        delete storage.state.refreshToken;
+        localStorage.setItem('auth-storage', JSON.stringify(storage));
+      }
+    }
+  } catch {
+    // No bloquear el cierre de sesión por storage corrupto.
+  }
+
+  ['token', 'accessToken', 'refreshToken', 'user'].forEach((key) => {
+    localStorage.removeItem(key);
+    sessionStorage.removeItem(key);
+  });
+};
+
 export const useAuthStore = create(
   persist(
     (set, get) => ({
@@ -33,9 +55,7 @@ export const useAuthStore = create(
           authStatus: 'UNAUTHENTICATED',
         });
         
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
+        clearLegacyAuthResidue();
       },
 
       getUser: () => get().user,

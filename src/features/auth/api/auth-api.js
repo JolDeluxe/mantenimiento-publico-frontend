@@ -1,4 +1,4 @@
-import api, { handleError, isSessionInvalidError, isTemporaryAuthError } from '@/lib/axios';
+import api, { handleError, isDefinitiveAuthError, isSessionInvalidError, isTemporaryAuthError } from '@/lib/axios';
 import { useAuthStore } from '@/stores/auth-store';
 
 export const authService = {
@@ -32,7 +32,7 @@ export const authService = {
       useAuthStore.getState().logout();
       window.location.href = '/login';
     } catch (error) {
-      if (isSessionInvalidError(error)) {
+      if (isSessionInvalidError(error) || isDefinitiveAuthError(error) || error?.response?.status === 400) {
         useAuthStore.getState().logout();
         window.location.href = '/login';
         return;
