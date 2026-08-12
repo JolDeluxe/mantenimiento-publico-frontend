@@ -22,7 +22,7 @@ export const ProtectedRoute = () => {
 
     const sessionCheck = isAuthenticated
       ? api.get('/api/auth/me')
-      : api.post('/api/auth/refresh', {});
+      : api.post('/api/auth/refresh', {}, { _skipAuthRedirect: true });
 
     sessionCheck
       .then((payload) => {
