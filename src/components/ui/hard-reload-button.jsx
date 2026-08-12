@@ -14,9 +14,11 @@ export const HardReloadButton = ({ className }) => {
 
   return (
     <button
+      type="button"
       onClick={handleReload}
       disabled={isReloading}
       title="Forzar actualización"
+      aria-label="Forzar actualización"
       className={cn(
         "p-2 rounded-xl bg-gradient-to-tr from-slate-100 to-white border border-slate-200 shadow-sm",
         "hover:shadow-md hover:border-slate-300 active:scale-95 transition-all outline-none",
