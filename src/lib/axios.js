@@ -160,6 +160,7 @@ const clearLegacyTokens = () => {
       const storage = JSON.parse(rawStorage);
       if (storage?.state) {
         delete storage.state.token;
+        delete storage.state.accessToken;
         delete storage.state.refreshToken;
         window.localStorage.setItem('auth-storage', JSON.stringify(storage));
       }
@@ -169,6 +170,7 @@ const clearLegacyTokens = () => {
   }
 
   window.localStorage.removeItem('token');
+  window.localStorage.removeItem('accessToken');
   window.localStorage.removeItem('refreshToken');
 };
 
@@ -194,7 +196,7 @@ const refreshAccessToken = async () => {
 
     if (isDefinitiveAuthError(error)) {
       console.error('🔴 Refresh inválido, purgando sesión global');
-      useAuthStore.getState().logout();
+      useAuthStore.getState().resetAuthOnly();
     }
     throw error;
   }
@@ -250,7 +252,11 @@ api.interceptors.response.use(
       !originalRequest?._skipAuthRedirect
     ) {
       console.error('🔴 Refresh inválido, cerrando sesión...');
-      useAuthStore.getState().logout();
+      useAuthStore.getState().resetAuthOnly();
+      return Promise.reject(error);
+    }
+
+    if (error.response?.status === 401 && originalRequest?.url?.includes('/auth/refresh')) {
       return Promise.reject(error);
     }
 

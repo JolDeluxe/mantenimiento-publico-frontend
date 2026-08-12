@@ -7,7 +7,7 @@ const ROLES_EQUIPO = ['TECNICO', 'COORDINADOR_MTTO', 'JEFE_MTTO', 'SUPER_ADMIN']
 
 export const ProtectedRoute = () => {
   const location = useLocation();
-  const { isAuthenticated, user: userState, authStatus, setAuthChecking, setAuthTemporarilyUnavailable, setUnauthenticated } = useAuthStore();
+  const { isAuthenticated, user: userState, authStatus, setAuthChecking, setAuthTemporarilyUnavailable, resetAuthOnly } = useAuthStore();
   const user = userState?.data ?? userState;
   const userRol = user?.rol;
   let urlDestino = import.meta.env.VITE_URL_SISTEMA_INTERNO || 'http://localhost:5000';
@@ -35,7 +35,7 @@ export const ProtectedRoute = () => {
         if (isTemporaryAuthError(error)) {
           setAuthTemporarilyUnavailable();
         } else if (isSessionInvalidError(error)) {
-          setUnauthenticated();
+          resetAuthOnly();
         } else {
           setAuthTemporarilyUnavailable();
         }
@@ -44,7 +44,7 @@ export const ProtectedRoute = () => {
     return () => {
       active = false;
     };
-  }, [isAuthenticated, setAuthChecking, setAuthTemporarilyUnavailable, setUnauthenticated]);
+  }, [isAuthenticated, setAuthChecking, setAuthTemporarilyUnavailable, resetAuthOnly]);
 
   useEffect(() => {
     if (isAuthenticated && ROLES_EQUIPO.includes(userRol)) {

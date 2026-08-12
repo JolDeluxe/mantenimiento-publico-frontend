@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-const clearLegacyAuthResidue = () => {
+const AUTH_STORAGE_VERSION = 2;
+
+export const clearLegacyAuthResidue = () => {
   try {
     const rawStorage = localStorage.getItem('auth-storage');
     if (rawStorage) {
@@ -31,6 +33,7 @@ export const useAuthStore = create(
       authStatus: 'CHECKING',
 
       setAuth: (user) => {
+        clearLegacyAuthResidue();
         set({
           user,
           isAuthenticated: true,
@@ -48,6 +51,16 @@ export const useAuthStore = create(
         authStatus: 'UNAUTHENTICATED',
       }),
 
+      resetAuthOnly: () => {
+        set({
+          user: null,
+          isAuthenticated: false,
+          authStatus: 'UNAUTHENTICATED',
+        });
+
+        clearLegacyAuthResidue();
+      },
+
       logout: () => {
         set({
           user: null,
@@ -63,10 +76,18 @@ export const useAuthStore = create(
     }),
     {
       name: 'auth-storage', 
+      version: AUTH_STORAGE_VERSION,
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
+      migrate: () => {
+        clearLegacyAuthResidue();
+        return {
+          user: null,
+          isAuthenticated: false,
+        };
+      },
       merge: (persistedState, currentState) => ({
         ...currentState,
         user: persistedState?.user ?? null,
