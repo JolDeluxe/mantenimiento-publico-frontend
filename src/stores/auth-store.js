@@ -70,10 +70,8 @@ export const useAuthStore = create(
       merge: (persistedState, currentState) => ({
         ...currentState,
         user: persistedState?.user ?? null,
-        isAuthenticated: Boolean(persistedState?.isAuthenticated && persistedState?.user),
-        authStatus: persistedState?.isAuthenticated && persistedState?.user
-          ? 'AUTHENTICATED'
-          : 'CHECKING',
+        isAuthenticated: false,
+        authStatus: 'CHECKING',
       }),
     }
   )
