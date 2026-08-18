@@ -25,12 +25,28 @@ export const authService = {
   },
 
   /**
+   * Registrar cliente interno
+   */
+  register: async (userData) => {
+    try {
+      const data = await api.post('/api/auth/register', userData);
+
+      const { accessToken, refreshToken, user } = data;
+      useAuthStore.getState().setAuth(user, accessToken, refreshToken);
+
+      return data;
+    } catch (error) {
+      handleError(error);
+    }
+  },
+
+  /**
    * Cerrar sesión
    */
   logout: async () => {
     try {
       const refreshToken = useAuthStore.getState().refreshToken;
-      
+
       await api.post('/api/auth/logout', { refreshToken });
 
       useAuthStore.getState().logout();

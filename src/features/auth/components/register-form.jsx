@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Icon } from '@/components/ui/icon';
-import { Input } from '@/components/form/input';
+import { Input, Label } from '@/components/form/z_index';
 
 export const RegisterForm = ({
   formData,
@@ -10,13 +10,31 @@ export const RegisterForm = ({
   onSubmit,
   onBack
 }) => {
-  // Validación de dominio corporativo
-  const isCorporateEmail = formData.email.toLowerCase().endsWith('@cuadra.com.mx');
-  const emailError = !formData.email.trim() 
-    ? "El correo es obligatorio" 
-    : !isCorporateEmail 
-      ? "Solo se permiten correos @cuadra.com.mx" 
+  const [localSubmitted, setLocalSubmitted] = useState(false);
+
+  // Validación de dominio corporativo solo si se ingresa
+  const isEmailProvided = formData.email?.trim() !== '';
+  const isCorporateEmail = isEmailProvided ? formData.email.toLowerCase().endsWith('@cuadra.com.mx') : true;
+
+  const emailError = isEmailProvided && !isCorporateEmail
+      ? "Solo se permiten correos @cuadra.com.mx"
       : null;
+
+  const passMismatch = formData.password !== formData.confirmPassword;
+  const mismatchError = (localSubmitted || submitted) && passMismatch ? "Las contraseñas no coinciden" : null;
+  const passwordError = (localSubmitted || submitted) && !formData.password?.trim() ? "Requerida" : null;
+  const nameError = (localSubmitted || submitted) && !formData.nombre?.trim() ? "El nombre es obligatorio" : null;
+
+  const handleLocalSubmit = (e) => {
+    e.preventDefault();
+    setLocalSubmitted(true);
+
+    if (passMismatch || !formData.password?.trim() || !formData.nombre?.trim() || (isEmailProvided && !isCorporateEmail)) {
+      return;
+    }
+
+    if (onSubmit) onSubmit(e);
+  };
 
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
@@ -24,62 +42,97 @@ export const RegisterForm = ({
         Solicitar Cuenta
       </h2>
       <p className="text-slate-500 text-xs text-center mb-6 leading-tight">
-        Usa tu correo institucional para darte de alta en el sistema de mantenimiento.
+        Llena tus datos para darte de alta en el sistema de mantenimiento.
       </p>
 
-      <form className="flex flex-col gap-4" onSubmit={onSubmit} noValidate>
-        <Input
-          label="Nombre Completo"
-          iconName="person"
-          type="text"
-          name="nombre"
-          placeholder="Juan Pérez"
-          value={formData.nombre}
-          onChange={onChange}
-          submitted={submitted}
-          error={!formData.nombre.trim() ? "El nombre es obligatorio" : null}
-        />
+      <form className="flex flex-col gap-4" onSubmit={handleLocalSubmit} noValidate>
 
-        <Input
-          label="Correo Corporativo"
-          iconName="alternate_email"
-          type="email"
-          name="email"
-          placeholder="usuario@cuadra.com.mx"
-          value={formData.email}
-          onChange={onChange}
-          submitted={submitted}
-          error={emailError}
-        />
-
-        <div className="grid grid-cols-2 gap-3">
+        {/* 1. NOMBRE */}
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="nombre" error={!!nameError} className="flex items-center gap-2 font-bold text-[11px] tracking-widest text-slate-500">
+            NOMBRE
+          </Label>
           <Input
-            label="Contraseña"
-            iconName="lock"
+            id="nombre"
+            type="text"
+            name="nombre"
+            placeholder="Juan Pérez"
+            value={formData.nombre}
+            onChange={onChange}
+            error={!!nameError}
+            helperText={nameError}
+          />
+        </div>
+
+        {/* 2. CORREO INSTITUCIONAL (OPCIONAL) */}
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="email" error={!!emailError} className="flex items-center justify-between font-bold text-[11px] tracking-widest text-slate-500">
+            <span>CORREO INSTITUCIONAL (OPCIONAL)</span>
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            name="email"
+            placeholder="usuario@cuadra.com.mx"
+            value={formData.email}
+            onChange={onChange}
+            error={!!emailError}
+            helperText={emailError || "Solo @cuadra.com.mx"}
+          />
+        </div>
+
+        {/* 3. TELÉFONO (OPCIONAL) */}
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="telefono" className="flex items-center font-bold text-[11px] tracking-widest text-slate-500">
+            TELÉFONO (OPCIONAL)
+          </Label>
+          <Input
+            id="telefono"
+            type="tel"
+            name="telefono"
+            placeholder="10 dígitos"
+            value={formData.telefono || ''}
+            onChange={onChange}
+          />
+        </div>
+
+        {/* 4. CONTRASEÑA */}
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="password" error={!!passwordError} className="flex items-center font-bold text-[11px] tracking-widest text-slate-500">
+            CONTRASEÑA
+          </Label>
+          <Input
+            id="password"
             type="password"
             name="password"
             placeholder="••••••••"
             value={formData.password}
             onChange={onChange}
-            submitted={submitted}
-            error={!formData.password.trim() ? "Requerida" : null}
+            error={!!passwordError}
+            helperText={passwordError}
           />
+        </div>
+
+        {/* 5. REPETIR CONTRASEÑA */}
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="confirmPassword" error={!!mismatchError} className="flex items-center font-bold text-[11px] tracking-widest text-slate-500">
+            REPETIR CONTRASEÑA
+          </Label>
           <Input
-            label="Confirmar"
-            iconName="shield_lock"
+            id="confirmPassword"
             type="password"
             name="confirmPassword"
             placeholder="••••••••"
             value={formData.confirmPassword}
             onChange={onChange}
-            submitted={submitted}
-            error={formData.password !== formData.confirmPassword ? "No coincide" : null}
+            error={!!mismatchError}
+            helperText={mismatchError}
           />
         </div>
 
         <button
           type="submit"
-          disabled={loading || (submitted && !isCorporateEmail)}
+          disabled={loading}
           className={`w-full mt-2 py-3 rounded-md font-bold uppercase tracking-wide transition-colors duration-300 flex items-center justify-center gap-2 ${
             loading
               ? "bg-slate-400 text-white cursor-not-allowed"

@@ -16,7 +16,7 @@ export const ProfileGeneralForm = ({
   const [formErrors, setFormErrors] = useState({});
 
   // Regla de negocio derivada del Backend para UX:
-  const requiereEmail = ['CLIENTE_INTERNO', 'JEFE_MTTO', 'COORDINADOR'].includes(profile?.rol);
+  const requiereEmail = ['JEFE_MTTO', 'COORDINADOR'].includes(profile?.rol);
 
   useEffect(() => {
     if (profile) {

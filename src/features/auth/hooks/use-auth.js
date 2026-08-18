@@ -25,12 +25,8 @@ export const useAuth = () => {
     setLoading(true);
     setBackendError(null);
     try {
-      // Aquí usarías tu authService.register si existiera
-      // await authService.register(userData);
-      
-      // Simulador por ahora para la vista de registro
-      await new Promise(r => setTimeout(r, 1000));
-      return true;
+      const data = await authService.register(userData);
+      return data;
     } catch (error) {
       setBackendError(error.message || 'Error al procesar el registro');
       return false;
@@ -44,6 +40,6 @@ export const useAuth = () => {
     register,
     loading,
     backendError,
-    setBackendError 
+    setBackendError
   };
 };
