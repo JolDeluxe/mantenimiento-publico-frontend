@@ -233,12 +233,13 @@ export const NuevoReporteMobile = ({
   const isStep2Valid = esMaquina ? isMaquinaValid : isIncidenteValid;
   const isStep3Valid = esMaquina ? isIncidenteValid : isUbicacionValid;
   const numCharsDesc = descripcion ? descripcion.length : 0;
+  const numCharsDescTrimmed = descripcion ? descripcion.trim().length : 0;
   const isOtro = incidente?.id === 'OTRO';
   const maxChars = isOtro ? MAX_CARACTERES_OTRO : MAX_CARACTERES_DESCRIPCION;
 
   const isStep4Valid = Boolean(
     descripcion &&
-      numCharsDesc >= MIN_CARACTERES_DESCRIPCION &&
+      numCharsDescTrimmed >= MIN_CARACTERES_DESCRIPCION &&
       numCharsDesc <= maxChars &&
       (!incidente?.permiteTituloPersonalizado || (tituloPersonalizado && tituloPersonalizado.trim().length >= 10))
   );
@@ -293,10 +294,11 @@ export const NuevoReporteMobile = ({
   const handleVerResumenFinal = () => {
     setSubmitted(true);
     const numCharsDesc = descripcion ? descripcion.length : 0;
+    const numCharsDescTrimmed = descripcion ? descripcion.trim().length : 0;
     const isOtro = incidente?.id === 'OTRO';
     const maxChars = isOtro ? MAX_CARACTERES_OTRO : MAX_CARACTERES_DESCRIPCION;
 
-    if (!descripcion || numCharsDesc < MIN_CARACTERES_DESCRIPCION) {
+    if (numCharsDescTrimmed < MIN_CARACTERES_DESCRIPCION) {
       notify.error(`Escribe una descripción de al menos ${MIN_CARACTERES_DESCRIPCION} caracteres.`);
       return;
     }
@@ -608,7 +610,7 @@ export const NuevoReporteMobile = ({
                     onChange={setDescripcion}
                     submitted={submitted}
                     incidente={incidente}
-                    error={submitted && (descripcion.length < MIN_CARACTERES_DESCRIPCION)}
+                    error={submitted && (descripcion.trim().length < MIN_CARACTERES_DESCRIPCION)}
                   />
                   
                   <div className="px-1 border-t border-slate-100 pt-1">
@@ -796,7 +798,7 @@ export const NuevoReporteMobile = ({
             ) : (
               <button
                 type="button"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isStep4Valid}
                 onClick={handleSubmit}
                 className="relative overflow-hidden flex-1 h-11 text-[10.5px] font-extrabold uppercase tracking-wider rounded-2xl bg-emerald-600/90 hover:bg-emerald-600 active:bg-emerald-700 disabled:opacity-50 text-white backdrop-blur-xl border border-white/40 shadow-[0_10px_30px_rgba(16,185,129,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] transition-all cursor-pointer flex items-center justify-center gap-1.5 min-w-0"
               >

@@ -11,21 +11,22 @@ export const DescripcionInput = ({ value, onChange, error, className, submitted,
   const maxChars = isOtro ? MAX_CARACTERES_OTRO : MAX_CARACTERES_DESCRIPCION;
   
   const numChars = value ? value.length : 0;
+  const trimmedChars = value ? value.trim().length : 0;
   
-  const isTooShort = numChars > 0 && numChars < MIN_CARACTERES_DESCRIPCION;
+  const isTooShort = trimmedChars > 0 && trimmedChars < MIN_CARACTERES_DESCRIPCION;
   
-  const showError = error || (submitted && (isTooShort || numChars === 0));
+  const showError = error || (submitted && (isTooShort || trimmedChars === 0));
   
   let helperMsg = null;
 
-  if ((error || submitted) && numChars === 0) {
+  if ((error || submitted) && trimmedChars === 0) {
     helperMsg = 'La descripción es obligatoria.';
   } else if (isTooShort) {
     helperMsg = `Escribe al menos ${MIN_CARACTERES_DESCRIPCION} letras.`;
   }
 
   let counterColor = "text-black";
-  if (numChars < MIN_CARACTERES_DESCRIPCION) {
+  if (trimmedChars < MIN_CARACTERES_DESCRIPCION) {
     counterColor = "text-red-500 font-bold";
   }
 
