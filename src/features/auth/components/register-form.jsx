@@ -12,24 +12,36 @@ export const RegisterForm = ({
 }) => {
   const [localSubmitted, setLocalSubmitted] = useState(false);
 
-  // Validación de dominio corporativo solo si se ingresa
+  const showErrors = localSubmitted || submitted;
+
+  // Validación de correo: solo se exige @cuadra.com.mx si se ingresó algo
   const isEmailProvided = formData.email?.trim() !== '';
-  const isCorporateEmail = isEmailProvided ? formData.email.toLowerCase().endsWith('@cuadra.com.mx') : true;
+  const isCorporateEmail = isEmailProvided
+    ? formData.email.trim().toLowerCase().endsWith('@cuadra.com.mx')
+    : true;
 
   const emailError = isEmailProvided && !isCorporateEmail
-      ? "Solo se permiten correos @cuadra.com.mx"
-      : null;
+    ? "Solo se permiten correos @cuadra.com.mx"
+    : null;
 
   const passMismatch = formData.password !== formData.confirmPassword;
-  const mismatchError = (localSubmitted || submitted) && passMismatch ? "Las contraseñas no coinciden" : null;
-  const passwordError = (localSubmitted || submitted) && !formData.password?.trim() ? "Requerida" : null;
-  const nameError = (localSubmitted || submitted) && !formData.nombre?.trim() ? "El nombre es obligatorio" : null;
+  const nameError = showErrors && !formData.nombre?.trim() ? "El nombre es obligatorio" : null;
+  const passwordError = showErrors && !formData.password?.trim() ? "La contraseña es obligatoria" : null;
+  const mismatchError = showErrors && formData.password?.trim() && passMismatch
+    ? "Las contraseñas no coinciden"
+    : null;
 
   const handleLocalSubmit = (e) => {
     e.preventDefault();
     setLocalSubmitted(true);
 
-    if (passMismatch || !formData.password?.trim() || !formData.nombre?.trim() || (isEmailProvided && !isCorporateEmail)) {
+    // Bloquear si hay errores — todos los campos con error ya son visibles
+    if (
+      !formData.nombre?.trim() ||
+      !formData.password?.trim() ||
+      passMismatch ||
+      (isEmailProvided && !isCorporateEmail)
+    ) {
       return;
     }
 
@@ -38,18 +50,25 @@ export const RegisterForm = ({
 
   return (
     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-      <h2 className="fuente-titulos text-2xl font-bold mb-2 text-center text-marca-primario uppercase">
+      <h2 className="fuente-titulos text-2xl font-bold mb-1 text-center text-marca-primario uppercase">
         Solicitar Cuenta
       </h2>
-      <p className="text-slate-500 text-xs text-center mb-6 leading-tight">
+      <p className="text-slate-500 text-xs text-center mb-2 leading-tight">
         Llena tus datos para darte de alta en el sistema de mantenimiento.
+      </p>
+      <p className="text-slate-400 text-[11px] text-center mb-5 leading-tight italic">
+        Tu usuario de acceso se generará automáticamente.
       </p>
 
       <form className="flex flex-col gap-4" onSubmit={handleLocalSubmit} noValidate>
 
         {/* 1. NOMBRE */}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="nombre" error={!!nameError} className="flex items-center gap-2 font-bold text-[11px] tracking-widest text-slate-500">
+          <Label
+            htmlFor="nombre"
+            error={!!nameError}
+            className="flex items-center gap-2 font-bold text-[11px] tracking-widest text-slate-500"
+          >
             NOMBRE
           </Label>
           <Input
@@ -61,12 +80,17 @@ export const RegisterForm = ({
             onChange={onChange}
             error={!!nameError}
             helperText={nameError}
+            autoComplete="name"
           />
         </div>
 
         {/* 2. CORREO INSTITUCIONAL (OPCIONAL) */}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="email" error={!!emailError} className="flex items-center justify-between font-bold text-[11px] tracking-widest text-slate-500">
+          <Label
+            htmlFor="email"
+            error={!!emailError}
+            className="flex items-center justify-between font-bold text-[11px] tracking-widest text-slate-500"
+          >
             <span>CORREO INSTITUCIONAL (OPCIONAL)</span>
           </Label>
           <Input
@@ -77,13 +101,17 @@ export const RegisterForm = ({
             value={formData.email}
             onChange={onChange}
             error={!!emailError}
-            helperText={emailError || "Solo @cuadra.com.mx"}
+            helperText={emailError || "¿No tienes correo institucional? Déjalo vacío."}
+            autoComplete="email"
           />
         </div>
 
         {/* 3. TELÉFONO (OPCIONAL) */}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="telefono" className="flex items-center font-bold text-[11px] tracking-widest text-slate-500">
+          <Label
+            htmlFor="telefono"
+            className="flex items-center font-bold text-[11px] tracking-widest text-slate-500"
+          >
             TELÉFONO (OPCIONAL)
           </Label>
           <Input
@@ -93,12 +121,17 @@ export const RegisterForm = ({
             placeholder="10 dígitos"
             value={formData.telefono || ''}
             onChange={onChange}
+            autoComplete="tel"
           />
         </div>
 
         {/* 4. CONTRASEÑA */}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="password" error={!!passwordError} className="flex items-center font-bold text-[11px] tracking-widest text-slate-500">
+          <Label
+            htmlFor="password"
+            error={!!passwordError}
+            className="flex items-center font-bold text-[11px] tracking-widest text-slate-500"
+          >
             CONTRASEÑA
           </Label>
           <Input
@@ -110,12 +143,17 @@ export const RegisterForm = ({
             onChange={onChange}
             error={!!passwordError}
             helperText={passwordError}
+            autoComplete="new-password"
           />
         </div>
 
         {/* 5. REPETIR CONTRASEÑA */}
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="confirmPassword" error={!!mismatchError} className="flex items-center font-bold text-[11px] tracking-widest text-slate-500">
+          <Label
+            htmlFor="confirmPassword"
+            error={!!mismatchError}
+            className="flex items-center font-bold text-[11px] tracking-widest text-slate-500"
+          >
             REPETIR CONTRASEÑA
           </Label>
           <Input
@@ -127,6 +165,7 @@ export const RegisterForm = ({
             onChange={onChange}
             error={!!mismatchError}
             helperText={mismatchError}
+            autoComplete="new-password"
           />
         </div>
 

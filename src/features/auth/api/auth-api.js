@@ -25,15 +25,15 @@ export const authService = {
   },
 
   /**
-   * Registrar cliente interno
+   * Registrar cliente interno.
+   * NO inicia sesión automáticamente — solo devuelve la respuesta del backend.
+   * El componente es responsable de leer response.user.username y mostrar el modal.
    */
   register: async (userData) => {
     try {
       const data = await api.post('/api/auth/register', userData);
-
-      const { accessToken, refreshToken, user } = data;
-      useAuthStore.getState().setAuth(user, accessToken, refreshToken);
-
+      // Intencionalmente NO se llama a setAuth() aquí.
+      // El usuario deberá iniciar sesión manualmente después del registro.
       return data;
     } catch (error) {
       handleError(error);

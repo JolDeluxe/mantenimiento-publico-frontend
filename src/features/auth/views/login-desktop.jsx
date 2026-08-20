@@ -7,12 +7,12 @@ import { HardReloadButton } from '@/components/ui/hard-reload-button';
 export const LoginDesktop = ({ view, bgImage, onBack, ...formProps }) => {
   return (
     <div
-      className="flex items-center justify-center min-h-screen relative bg-cover bg-center bg-no-repeat transition-all duration-100"
+      className="min-h-screen overflow-y-auto flex items-start justify-center py-8 bg-cover bg-center bg-no-repeat transition-all duration-100"
       style={{ backgroundImage: `url(${bgImage})` }}
     >
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-none" />
 
-      <div className="relative bg-white rounded-lg shadow-2xl w-112.5 p-8 text-slate-800">
+      <div className="relative bg-white rounded-lg shadow-2xl w-112.5 p-8 text-slate-800 my-auto">
         <HardReloadButton className="absolute right-4 top-4" />
 
         <div className="flex justify-center mb-8">

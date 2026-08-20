@@ -44,6 +44,7 @@ export const LoginForm = ({
             onChange={onChange}
             error={!!emailError}
             helperText={emailError}
+            autoComplete="username"
           />
         </div>
 
@@ -61,6 +62,7 @@ export const LoginForm = ({
             onChange={onChange}
             error={!!passwordError}
             helperText={passwordError}
+            autoComplete="current-password"
           />
         </div>
 

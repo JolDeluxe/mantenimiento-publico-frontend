@@ -9,13 +9,11 @@ export const useAuth = () => {
     setLoading(true);
     setBackendError(null);
     try {
-      // Tu authService ya guarda en el useAuthStore internamente
       await authService.login(identifier, password);
-      return true; // El login fue exitoso
+      return true;
     } catch (error) {
-      // Captura el mensaje de error de tu handleError en axios.js
       setBackendError(error.message || 'Error al conectar con el servidor');
-      return false; // El login falló
+      return false;
     } finally {
       setLoading(false);
     }
