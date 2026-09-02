@@ -10,11 +10,16 @@ const isAcceptedImage = (file) => {
 };
 
 export const ImageUploader = ({ imagenes = [], onImagesChange, maxImages = 3 }) => {
-  const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
   const [error, setError] = useState('');
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
+
+    if (files.length === 0) {
+      return;
+    }
 
     if (imagenes.length + files.length > maxImages) {
       setError(`Solo puedes subir un máximo de ${maxImages} imágenes en total.`);
@@ -59,14 +64,26 @@ export const ImageUploader = ({ imagenes = [], onImagesChange, maxImages = 3 }) 
 
       <div className="flex flex-wrap items-center gap-2">
         {!hasReachedMax && (
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="w-16 h-16 flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 transition-colors cursor-pointer text-slate-500 shrink-0"
-          >
-            <Icon name="add_a_photo" size="sm" />
-            <span className="text-[9px] font-bold">Añadir</span>
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={() => cameraInputRef.current?.click()}
+              className="w-16 h-16 flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 transition-colors cursor-pointer text-slate-500 shrink-0"
+              aria-label="Tomar foto con la cámara"
+            >
+              <Icon name="photo_camera" size="sm" />
+              <span className="text-[9px] font-bold">Cámara</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => galleryInputRef.current?.click()}
+              className="w-16 h-16 flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 transition-colors cursor-pointer text-slate-500 shrink-0"
+              aria-label="Seleccionar foto desde la galería"
+            >
+              <Icon name="photo_library" size="sm" />
+              <span className="text-[9px] font-bold">Galería</span>
+            </button>
+          </>
         )}
 
         {imagenes.map((img, idx) => (
@@ -89,7 +106,15 @@ export const ImageUploader = ({ imagenes = [], onImagesChange, maxImages = 3 }) 
 
       <input
         type="file"
-        ref={fileInputRef}
+        ref={cameraInputRef}
+        className="hidden"
+        accept="image/*,.heic,.heif"
+        capture="environment"
+        onChange={handleFileChange}
+      />
+      <input
+        type="file"
+        ref={galleryInputRef}
         className="hidden"
         accept="image/*,.heic,.heif"
         multiple
